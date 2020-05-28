@@ -16,7 +16,6 @@
 _TMP/
 *-manifest.json
 *.sublime-*
-package-lock.json
 config-dev.php
 stage.config.php
 profile.zip
