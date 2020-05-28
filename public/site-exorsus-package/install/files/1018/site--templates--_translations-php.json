@@ -1,0 +1,84 @@
+{
+    "file": "site\/templates\/_translations.php",
+    "textdomain": "site--templates--_translations-php",
+    "translations": {
+        "7c491b68fcdc8169f7aadfffbafaf47d": {
+            "text": "Zur\u00fcck nach oben"
+        },
+        "2419f8600825e9410d1b9a62a34570ec": {
+            "text": "Link zu"
+        },
+        "b3d9cfe70d659247a04bee1df5cf0de0": {
+            "text": "Unsere \u00d6ffnungszeiten"
+        },
+        "b9df0b67ae228c66e8c19cdc766faa65": {
+            "text": "Ihre Suche ergab keine Treffer. Bitte versuchen Sie es mit einem anderen Suchbegriff"
+        },
+        "0a3e24850a6ad2663d95eaecad389ba8": {
+            "text": "Ihre Suchergebnisse"
+        },
+        "d8fbe182d50c0469cc7a805fd4d7a1c8": {
+            "text": "weiterlesen"
+        },
+        "d959bbe25cc020e2db5276cb42927c7c": {
+            "text": "mehr erfahren"
+        },
+        "802a66a425e3d2306b303361f2d7b71e": {
+            "text": "Suchen..."
+        },
+        "06a943c59f33a34bb5924aaf72cd2995": {
+            "text": "Suche"
+        },
+        "13d1a60f2e3b4e97a8132761dfafe5d3": {
+            "text": "Ver\u00f6ffentlicht am"
+        },
+        "242595da77eb701663521d73e0e6abf1": {
+            "text": "Navigation \u00f6ffnen"
+        },
+        "4a9f679141992ec478de41af55c57cd1": {
+            "text": "Cookies unterst\u00fctzen die Bereitstellung und Optimierung dieser Webseite. Durch die Nutzung dieser Webseite erkl\u00e4ren Sie sich damit einverstanden."
+        },
+        "91c2f6d68e8a3c9578102ee7f3589d4d": {
+            "text": "Weitere Informationen und Widerspruch"
+        },
+        "2b899981cd65625d08f85c4940182694": {
+            "text": "Verwerfen"
+        },
+        "05afb6ce69b9cef1bd6ece7e4745f96c": {
+            "text": "Ablehnen"
+        },
+        "4abe77c201ff11663ccdf52fd6ecea86": {
+            "text": "Akzeptieren"
+        },
+        "1fcf49bc86614ff502b9ced185d17751": {
+            "text": "Zur Startseite"
+        },
+        "1f8261d17452a959e013666c5df45e07": {
+            "text": "Telefonnummer"
+        },
+        "b357b524e740bc85b9790a0712d84a30": {
+            "text": "E-Mail Adresse"
+        },
+        "4d7a3b1c46041dc73dec5764f3a6b63a": {
+            "text": "Hauptnavigation"
+        },
+        "ecf28384b6f6b902f803ae62f51c450e": {
+            "text": "Navigation Fu\u00dfzeile"
+        },
+        "27eb94947d38b65a8b19a8c27f532205": {
+            "text": "Seitensuche"
+        },
+        "1caa5735fa17244145c927706c5e885f": {
+            "text": "Lesen Sie mehr \u00fcber"
+        },
+        "d9e0971b6595d63994d4f83613f910dc": {
+            "text": "Erfahren Sie mehr"
+        },
+        "912ca5261cd400202cdae4acc94dfa0c": {
+            "text": "Konzept, Design, Entwicklung & Service"
+        },
+        "5db707f74d87bd123c565cfe06c13522": {
+            "text": "Alle Rechte vorbehalten"
+        }
+    }
+}

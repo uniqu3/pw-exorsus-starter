@@ -1,0 +1,17 @@
+// Social media color variations
+each(@social, {
+    .social-@{key} {
+        color: @value;
+    }
+});
+
+.social-icons {
+    a {
+        transition: color,opacity 250ms ease;
+        text-decoration: none;
+
+        &:hover {
+            opacity: .6;
+        }
+    }
+}

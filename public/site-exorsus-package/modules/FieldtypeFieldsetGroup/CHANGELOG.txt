@@ -1,0 +1,9 @@
+CHANGELOG
+ProcessWire Fieldtype Fieldset Group
+
+Version 3β: September 24, 2017
+- Fix issue where individual field context settings (like widht) were not 
+  getting applied after adding a fieldset to a template. 
+
+Version 1β: September 8, 2017
+- First beta release version

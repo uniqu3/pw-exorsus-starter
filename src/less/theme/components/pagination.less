@@ -1,0 +1,74 @@
+.MarkupPagerNav,
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin: .4rem 0;
+    padding: .4rem 0;
+    list-style: none;
+    font-size: 1.4rem;
+
+    li {
+        margin: .2rem .1rem;
+
+        span {
+            display: inline-block;
+            padding: .4rem;
+        }
+
+        a {
+            display: inline-block;
+            border: 1px solid @border-color;
+            border-radius: .1rem;
+            background-color: @color-light;
+            padding: .2rem .4rem;
+            text-decoration: none;
+            line-height: 1;
+            color: @color-gray;
+
+            &:focus,
+            &:hover {
+                box-shadow: 0 0 2px rgba(0,0,0,.1);
+            }
+        }
+
+        &.disabled {
+            a {
+                opacity: .5;
+                cursor: default;
+                pointer-events: none;
+            }
+        }
+
+        &.active {
+            & a {
+                border-color: @color-primary;
+                color: @color-primary;
+            }
+        }
+
+        &.page-prev,
+        &.page-next {
+            flex: 1 0 50%;
+        }
+
+        &.page-next {
+            text-align: right;
+        }
+
+        .page-item-title {
+            margin: 0;
+        }
+
+        .page-item-subtitle {
+            margin: 0;
+            opacity: .5;
+        }
+
+        &.MarkupPagerNavOn {
+            & a {
+                border-color: @color-primary;
+                color: @color-primary;
+            }
+        }
+    }
+}

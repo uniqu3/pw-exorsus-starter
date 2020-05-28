@@ -1,0 +1,30 @@
+{
+    "file": "site\/modules\/ProcessPageListerPro\/ProcessPageListerPro.module",
+    "textdomain": "site--modules--processpagelisterpro--processpagelisterpro-module",
+    "translations": {
+        "d3d2e617335f08df83599665eef8a418": {
+            "text": "Schlie\u00dfen"
+        },
+        "2959ce8aed67d6b6e6f5cefd601f1091": {
+            "text": "\u00d6ffne in neuen Fenster"
+        },
+        "e940c0fb33ade9b5bce36cafddea120b": {
+            "text": "Es gibt ungespeicherte \u00c4nderungen. Wenn Sie fortfahren, werden Sie diese \u00c4nderungen verlieren:"
+        },
+        "30269022e9d8f51beaabb52e5d0de2b7": {
+            "text": "Eltern"
+        },
+        "4ba80614f8ea4fbfce74f941f641c332": {
+            "text": "\u00c4nderungen speichern"
+        },
+        "786e2cc3ea3111434a3c0e0bf246c4ab": {
+            "text": "Lister konfigurieren"
+        },
+        "0eceeb45861f9585dd7a97a3e36f85c6": {
+            "text": "Erstellt"
+        },
+        "06df33001c1d7187fdd81ea1f5b277aa": {
+            "text": "Aktionen"
+        }
+    }
+}

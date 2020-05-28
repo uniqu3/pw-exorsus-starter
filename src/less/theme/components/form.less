@@ -1,0 +1,26 @@
+.form-search-header {
+
+    & .icon-search {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+}
+
+.form {
+    & .input {
+
+        // honeypot input
+        &-dummy {
+            position: absolute;
+            left: -999em;
+        }
+
+        &-select {
+            max-width: 320px;
+        }
+
+        &-field-narrow {
+            max-width: 80px;
+        }
+    }
+}

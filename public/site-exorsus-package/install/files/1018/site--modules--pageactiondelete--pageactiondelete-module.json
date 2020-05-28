@@ -1,0 +1,21 @@
+{
+    "file": "site\/modules\/PageActionDelete\/PageActionDelete.module",
+    "textdomain": "site--modules--pageactiondelete--pageactiondelete-module",
+    "translations": {
+        "a113bb044184a62aad6591f3b2b12c6a": {
+            "text": "In den Papierkorb verschieben"
+        },
+        "8fb41b3911b7f22a4e1d2dbfd77bc403": {
+            "text": "Endg\u00fcltig l\u00f6schen"
+        },
+        "139fdcd267af64851ae9106aec9c0eaa": {
+            "text": "Endg\u00fcltig l\u00f6schen (inklusive Kindseiten)"
+        },
+        "68eec88a0bc4a35d5cc461af850037ef": {
+            "text": "Wurde nicht gel\u00f6scht das es Kindeseiten enth\u00e4lt."
+        },
+        "1a2304de76040382ee344249ad4865e5": {
+            "text": "Seiten Aktion: L\u00f6sche\/Verwerfe Seiten"
+        }
+    }
+}

@@ -1,0 +1,72 @@
+//
+// Name:            Variables
+// Description:     Base variables for <project name>
+
+// --- GLOBALS ---//
+// Colours
+@color-light:     #FFFFFF;
+@color-lighter:   #f7f7f9;
+@color-darker:    #e8e8e8;
+@color-dark:      #2d3544;
+@color-primary:   #2b8dde;
+@color-secondary: #e9eaf1;
+@color-default:     lighten(@color-dark, 13%);
+
+
+@color-gray:       #a3a8b3;
+@color-lighten-dark: lighten(@color-dark, 35%);
+
+// Fonts
+@body-font-family: 'Fira Sans', @font-sans-serif;
+
+// --- MAIN LAYOUT --- //
+
+//--- TOP Bar / META SECTION ---//
+@metabar-background: @color-lighter;
+@metabar-border: @border-width solid @border-color;
+@metabar-text-color: @color-default;
+
+// --- NAVIGATION --- //
+@nav-primary: @color-default;
+@nav-active: lighten(@color-default, 25%);
+@nav-main-background: @color-light;
+
+// --- CONTENT ---//
+
+// --- ASIDE ---//
+@block-border: @border-width solid @border-color;
+@block-background: @color-light;
+@block-color: @color-gray;
+
+//--- FOOTER ---//
+@footer-background-color: @color-dark;
+@footer-text-color: @color-secondary;
+
+// --- SOCIAL MEDIA ---- //
+@social: {
+    facebook: #1877f2;
+    google:   #4285f4;
+    linkedin: #007bb5;
+    instagram:#c32aa3;
+    xing:     #026466;
+    twitter:  #1da1f2;
+    youtube:  #ff0000;
+}
+
+// --- OVERRIDES --- //
+// Override Notifications variables for ProcessWire
+@notification-variations: {
+    default: @notification-default;
+    primary: @notification-primary;
+    secondary: @notification-secondary;
+    error: @notification-error;
+    NoticeError: @notification-error; // ProcessWire Error
+    danger: @notification-danger;
+    warning: @notification-warning;
+    NoticeWarning: @notification-warning; //Processwire Warning
+    success: @notification-success;
+    NoticeMessage: @notification-success; // Processwire Success
+    notice: @notification-notice;
+    NoticeInfo: @notification-notice; //Processwire Notice
+    highlight: @notification-highlight;
+}

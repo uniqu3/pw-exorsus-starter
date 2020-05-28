@@ -1,0 +1,12 @@
+{
+    "file": "site\/templates\/_protected-config.php",
+    "textdomain": "site--templates--_protected-config-php",
+    "translations": {
+        "f83ee81ce45796efac1cf9a42db42eb1": {
+            "text": "Leider haben Sie keine Berechtigung diese Seite zu sehen."
+        },
+        "c29ae12dc1a91501b76091d54d6300c8": {
+            "text": "Diese Seite ist gesch\u00fctzt. Sie m\u00fcssen sich einloggen um die Seite zu betrachten."
+        }
+    }
+}

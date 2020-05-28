@@ -1,0 +1,318 @@
+/**
+ * @package exors.us
+ * @component button.less
+ * @description Button styles and variations
+ */
+
+// Variables
+// ========================================================================
+@btn-default: @color-default;
+@btn-primary: @color-primary;
+@btn-secondary: @color-secondary;
+@btn-link: @link-color;
+@btn-darker: @color-darker;
+@btn-dark: @color-dark;
+@btn-error: @error;
+@btn-warning: @warning;
+@btn-success: @success;
+@btn-notice: @notice;
+@btn-highlight: @highlight;
+
+@btn-border-width: @border-width;
+@btn-border-color: @border-color;
+@btn-radius: @radius-sm;
+@btn-text-color: @color-default;
+@btn-background: @color-light;
+@input-size: 3.6rem;
+
+@btn-variations: {
+    default: @btn-default;
+    primary: @btn-primary;
+    secondary: @btn-secondary;
+    link: @btn-link;
+    darker: @btn-darker;
+    dark: @btn-dark;
+    error: @btn-error;
+    warning: @btn-warning;
+    success: @btn-success;
+    notice: @btn-notice;
+    highlight: @btn-highlight;
+}
+// Mixins
+// ========================================================================
+.make-btn-colors(@colors: @btn-variations) {
+
+    each(@colors, {
+        & when not (@key = link) {
+            &.is-@{key} {
+                background-color: @value;
+                border-color: @value;
+
+                &:hover,
+                &:focus,
+                &.is-selected {
+                    background-color: darken(@value, 6%);
+                    border-color: darken(@value, 8%);
+                }
+
+                &:active,
+                &.is-selected {
+                    border-color: darken(@value, 8%);
+                    box-shadow: 0 0 2px fade(@value, 25%);
+                }
+
+                & when (luma(@value) < 65%) {
+                    color: @color-light;
+                }
+            }
+        };
+
+        & when (@key = link) {
+            &.is-@{key} {
+                background-color: transparent;
+                border-color: transparent;
+                color: @link-color;
+
+                &:hover,
+                &:focus,
+                &.is-selected {
+                    color: @link-color-hover;
+                }
+            }
+        }
+    });
+
+    each(@colors, {
+        & when not (@key = link) and not (@key = white) and not (@key = light) {
+            &.is-@{key}.is-outlined {
+
+                background-color: transparent;
+                border-color: @value;
+                color: @value;
+
+                &:hover,
+                &:focus,
+                &.is-selected {
+                    color: @color-light;
+                    background-color: @value;
+                    & when (luma(@value) >= 65%) {
+                        color: @color-dark;
+                    }
+                    & when (luma(@value) < 65%) {
+                        color: @color-light;
+                    }
+                }
+
+                &:active,
+                &.is-selected {
+                    color: @value;
+                    border-color: darken(@value, 8%);
+                    box-shadow: 0 0 2px fade(@value, 25%);
+                }
+            }
+        }
+    });
+};
+// Component
+// ========================================================================
+.btn {
+    // Basic button
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 200ms, border 200ms, box-shadow 200ms, color 200ms;
+    outline: none;
+    border: @btn-border-width solid @btn-border-color;
+    border-radius: @btn-radius;
+    box-shadow: none;
+    background-color: @btn-background;
+    cursor: pointer;
+    padding: @spacing-sm @spacing-lg;
+    height: @input-size;
+    vertical-align: middle;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    color: @btn-text-color;
+    font-size: @body-font-size;
+    user-select: none;
+
+    // Default button size
+    &.is-medium {
+        &:extend(.btn);
+    }
+
+    // action button like an icon button
+    &.is-action {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    // button states
+    &:focus {
+        outline: transparent;
+    }
+
+    &:focus,
+    &:hover,
+    &:active,
+    &.active {
+        border-color: darken(@btn-border-color, 8%);
+        text-decoration: none;
+    }
+
+    &[disabled],
+    &:disabled,
+    &.is-disabled {
+        opacity: .5;
+        cursor: not-allowed !important;
+        pointer-events: none;
+    }
+
+    // button sizes
+    &.is-small {
+        padding: @spacing-xs @spacing-sm;
+        height: @input-size / 1.285;
+        font-size: @text[xsmall];
+    }
+
+    &.is-large {
+        padding: @spacing-md @spacing-xl;
+        height: @input-size * 1.16;
+        font-size: @text[large];
+    }
+
+    &.is-full {
+        display: flex;
+        width: 100%;
+    }
+
+    // Buttons with icon
+    & .icon {
+
+        &,
+        .is-small&,
+        .is-medium&,
+        .is-large& {
+            
+            &:first-child:not(:last-child) {
+                margin-right: @spacing-sm;
+                margin-left: calc(-0.12em - @btn-border-width);
+            }
+            &:last-child:not(:first-child) {
+                margin-right: calc(-0.12em - @btn-border-width);
+                margin-left: @spacing-sm;
+            }
+            &:first-child:last-child {
+                margin-right: calc(-0.12em - @btn-border-width);
+                margin-left: calc(-0.12em - @btn-border-width);
+            }
+        }
+    }
+
+    // build all buttons
+    .make-btn-colors;
+
+    // clear/close button for modals and notifications
+    &-clear {
+        appearance: none;
+        display: inline-block;
+        position: relative;
+        flex-grow: 0;
+        flex-shrink: 0;
+        transition: background-color 200ms;
+        outline: 0;
+        border: none;
+        border-radius: @radius-circle;
+        background-color: fade(@color-dark, 20%);
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        vertical-align: top;
+        font-size: 0;
+        pointer-events: auto;
+
+        &:before,
+        &:after {
+            display: block;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%) rotate(45deg);
+            transform-origin: center center;
+            background-color: @color-light;
+            content: "";
+        }
+
+        &:before {
+            width: 50%;
+            height: 2px;
+        }
+
+        &:after {
+            width: 2px;
+            height: 50%;
+        }
+
+        &.is-small,
+        .is-small &,
+        .is-medium & {
+            width: 16px;
+            height: 16px;
+        }
+
+        &:hover {
+            background-color: fade(@color-dark, 40%);
+        }
+    }
+}
+
+// Grouping buttons
+// @depends utilities/group.less
+.is-group {
+
+    & .btn {
+        .is-group-full& {
+            flex: 1 0 0;
+        }
+
+        &:first-child:not(:last-child) {
+            margin-right: 0;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        &:not(:first-child):not(:last-child) {
+            margin-right: 0;
+            margin-left: -@btn-border-width;
+            border-radius: 0;
+        }
+
+        &:last-child:not(:first-child) {
+            margin-left: -@btn-border-width;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        &:focus,
+        &:hover {
+            z-index: 1;
+        }
+    }
+}
+
+.has-group {
+
+    // group of buttons
+    & .btn {
+        margin-bottom: @spacing-sm;
+
+        &:not(:last-child) {
+            margin-right: @spacing-sm;
+        }
+        &.is-full {
+            margin-right: 0;
+        }
+    }
+}

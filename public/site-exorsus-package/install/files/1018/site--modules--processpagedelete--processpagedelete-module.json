@@ -1,0 +1,24 @@
+{
+    "file": "site\/modules\/ProcessPageDelete\/ProcessPageDelete.module",
+    "textdomain": "site--modules--processpagedelete--processpagedelete-module",
+    "translations": {
+        "d943d7a2b58b1e70055afee0bbd34967": {
+            "text": "Sie haben keine Berechtigung, um diese Seite zu l\u00f6schen."
+        },
+        "a419fb9d9fe259c36eb1e4a99462bd1f": {
+            "text": "Verschoben in den Papierkorb: %s"
+        },
+        "827884bd1b673b7e58def7d09bf59b8b": {
+            "text": "Seite gel\u00f6scht: %s"
+        },
+        "e01fad414b12e967f1757aae26275ba5": {
+            "text": "Entfernt %s"
+        },
+        "05a5015935a459afea1a54da554854de": {
+            "text": "Seite l\u00f6schen"
+        },
+        "a7e253cd8dd95da3e20daf45519a8dc2": {
+            "text": "Papierkorb"
+        }
+    }
+}

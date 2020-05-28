@@ -1,0 +1,10 @@
+BEGIN:VCARD
+VERSION:3.0
+REV:2019-10-07T11:52:57Z
+ORG;CHARSET=utf-8:Musterfirma GmbH
+TITLE;CHARSET=utf-8:Buchhaltung
+EMAIL;INTERNET:m.mustermann@email.com
+TEL;PREF;WORK:00 55 66 222
+ADR;WORK;POSTAL;CHARSET=utf-8:;;Musterstraße 1;Bodensdorf;;9551;Austria
+URL:
+END:VCARD

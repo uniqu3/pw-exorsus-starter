@@ -1,0 +1,92 @@
+// --- ASIDE CONTENT --//
+.block {
+    border: @block-border;
+    background-color: @block-background;
+    color: @block-color;
+    font-size: 1.4rem;
+
+    &:not(:first-child) {
+        margin-top: @spacing-lg;
+    }
+
+    & > :last-child {
+        padding-bottom: 2rem;
+    }
+
+    & a {
+        text-decoration: none;
+        color: currentColor;
+
+        &:hover {
+            color: darken(@block-color, 8%);
+        }
+    }
+
+    &-address {
+
+        & address:not(:last-child) {
+            margin-bottom: @spacing-md;
+        }
+
+        & a {
+            color: currentColor;
+        }
+    }
+
+    &-business-hours {
+        
+        & .model-business-hours {
+            padding-top: @spacing-md;
+            font-size: @text[medium];
+
+            &:not(:last-child) {
+                border-bottom: @block-border;
+                padding-bottom: @spacing-md;
+            }
+        }
+    }
+
+    &-pages {
+
+        & .list--block {
+
+            & > li {
+                padding-top: @spacing-md;
+                padding-bottom: @spacing-md;
+
+                &:not(:last-child) {
+                    border-bottom: @block-border;
+                }
+
+                & a {
+                    display: block;
+                    text-decoration: none;
+                    color: currentColor;
+                }
+
+                .icon {
+                    transform: translateX(0);
+                    transition: transform 200ms;
+                }
+
+                &:hover .icon {
+                    transform: translateX(5px);
+                }
+            }
+
+        }
+    }
+
+    &-articles {
+
+        & .model--article {
+            &:not(:last-child) {
+                border-bottom: @block-border;
+            }
+        }
+
+        & hgroup {
+            margin-bottom: @spacing-sm;
+        }
+    }
+}

@@ -1,0 +1,45 @@
+{
+    "file": "site\/modules\/ProcessPageListerPro\/ListerProActions.php",
+    "textdomain": "site--modules--processpagelisterpro--listerproactions-php",
+    "translations": {
+        "06df33001c1d7187fdd81ea1f5b277aa": {
+            "text": "Aktionen"
+        },
+        "5e9b3f2900098d7c83b89adb9a0eaec3": {
+            "text": "alle Seiten die Ihren Filter entsprechen"
+        },
+        "0973b9d493d1017c8334c1c14a9beaa5": {
+            "text": "ausgew\u00e4hlte Seite(n)"
+        },
+        "5eb869fc7dad176f5631edbee651bcf2": {
+            "text": "Wann sollen die Aktionen ausgef\u00fchrt werden?"
+        },
+        "1e1cc9bdeb2f29f5480106aec7e9bc48": {
+            "text": "Jetzt"
+        },
+        "61057a0c84605444201929bdd72014f0": {
+            "text": "Sp\u00e4ter"
+        },
+        "40cd014b7b6251e3a22e6a45a73a64e1": {
+            "text": "Ausf\u00fchren"
+        },
+        "178fdde0003a2dee51ff20897fc69122": {
+            "text": "Ergebnisse der aktion"
+        },
+        "207ab96f9895f87f78f6c6162f323a4f": {
+            "text": "%d Seiten"
+        },
+        "193cfc9be3b995831c6af2fea6650e60": {
+            "text": "Seite"
+        },
+        "fbb44b4487415b134bce9c790a27fe5e": {
+            "text": "gesamt"
+        },
+        "4593f380fadb80aed84424702f6746ba": {
+            "text": "Filter zur\u00fccksetzen"
+        },
+        "684c40f2b94de4d5a9d9b55e4062c3f5": {
+            "text": "Ergebnisse aktualisieren"
+        }
+    }
+}

@@ -1,0 +1,214 @@
+.icon {
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 0;
+    outline: rgba(0,0,0,0);
+}
+
+/* ==========================================
+Single-colored icons can be modified like so:
+.icon-name {
+  font-size: 32px;
+  color: red;
+}
+========================================== */
+
+.icon-file-pdf-o {
+    width: 0.857421875em;
+}
+
+.icon-file-text-o {
+    width: 0.857421875em;
+}
+
+.icon-file-o {
+    width: 0.857421875em;
+}
+
+.icon-arrow-right {
+    width: 0.8212890625em;
+}
+
+.icon-arrow-left {
+    width: 0.892578125em;
+}
+
+.icon-angle-down {
+    width: 0.642578125em;
+}
+
+.icon-angle-up {
+    width: 0.642578125em;
+}
+
+.icon-angle-right {
+    width: 0.3388671875em;
+}
+
+.icon-angle-double-up {
+    width: 0.642578125em;
+}
+
+.icon-angle-double-right {
+    width: 0.5537109375em;
+}
+
+.icon-angle-double-left {
+    width: 0.5888671875em;
+}
+
+.icon-angle-left {
+    width: 0.375em;
+}
+
+.icon-chain {
+    width: 0.9287109375em;
+}
+
+.icon-newspaper-o {
+    width: 1.142578125em;
+}
+
+.icon-calendar {
+    width: 0.9287109375em;
+}
+
+.icon-mobile {
+    width: 0.4287109375em;
+}
+
+.icon-phone {
+    width: 0.7861328125em;
+}
+
+.icon-map-marker {
+    width: 0.5712890625em;
+}
+
+.icon-search {
+    width: 0.9287109375em;
+}
+
+.icon-instagram {
+    width: 0.857421875em;
+}
+
+.icon-linkedin {
+    width: 0.857421875em;
+}
+
+.icon-xing {
+    width: 0.7861328125em;
+}
+
+.icon-twitter {
+    width: 0.9287109375em;
+}
+
+.icon-facebook {
+    width: 0.587890625em;
+}
+
+.icon-google {
+    width: 0.83984375em;
+}
+
+// CSS Arrows
+.arrow {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    &-top {
+        transform: rotate(-45deg);
+    }
+    &-right {
+        transform: rotate(45deg);
+    }
+    &-bottom {
+        transform: rotate(135deg);
+    }
+    &-left {
+        transform: rotate(-135deg);
+    }
+}
+
+//===================================
+// Navigation icon
+
+.hamburger {
+    display: inline-block;
+    position: relative;
+    margin: 10px 10px;
+    outline: rgba(0,0,0,0);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+
+    &:-moz-focusring {
+        outline: rgba(0, 0, 0, 0);
+    }
+
+    & span {
+        position: absolute;
+        transition: 200ms cubic-bezier(.8, .5, .2, 1.4);
+        border-radius: 1px;
+        background-color: @color-dark;
+        width: 20px;
+        height: 3px;
+
+        &:nth-child(1) {
+            top: 11px;
+            left: 10px;
+        }
+
+        &:nth-child(2) {
+            top: 19px;
+            left: 10px;
+            opacity: 1;
+        }
+
+        &:nth-child(3) {
+            bottom: 10px;
+            left: 10px;
+        }
+    }
+
+    &:not(.is-open):hover span {
+
+        &:nth-child(2) {
+            transform: scaleX(.8);
+        }
+    }
+
+    &.is-open span,
+    &:active span {
+
+        &:nth-child(1) {
+            top: 16px;
+            transform: rotate(45deg);
+        }
+
+        &:nth-child(2) {
+            opacity: 0;
+        }
+
+        &:nth-child(3) {
+            top: 16px;
+            transform: rotate(-45deg);
+        }
+    }
+
+    &__invert span {
+        background-color: @color-light;
+
+        html.is-open & {
+            //background-color: @color-dark;
+        }
+    }
+}

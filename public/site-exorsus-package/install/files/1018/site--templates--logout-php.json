@@ -1,0 +1,9 @@
+{
+    "file": "site\/templates\/logout.php",
+    "textdomain": "site--templates--logout-php",
+    "translations": {
+        "2616f4b4455154bd6cc9709343a423c5": {
+            "text": "Sie wurden erfolgreich abgemeldet."
+        }
+    }
+}

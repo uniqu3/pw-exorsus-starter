@@ -1,0 +1,98 @@
+/**
+ * @package exors.us
+ * @component tables.less
+ * @description Basic tables styling including responsive table styles
+ */
+
+// Variables
+// ========================================================================
+@table-background-primary: @color-lighter;
+@table-background-secondary: darken(@table-background-primary, 3%);
+@table-border-width: @border-width;
+@table-border-color: @border-color;
+@table-spacing: @spacing-md @spacing-xs;
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    text-align: left;
+
+    td,
+    th {
+        border-bottom: @table-border-width solid @table-border-color;
+        padding: @table-spacing;
+    }
+
+    th {
+        border-bottom-width: @border-width-md;
+    }
+
+    &-striped {
+        tbody {
+            tr {
+                &:nth-of-type(odd) {
+                    background: @table-background-primary;
+                }
+                &.active {
+                    background-color: @table-background-secondary;
+                }
+            }
+
+        }
+    }
+
+    &-hover {
+        tbody {
+            tr {
+                &:hover {
+                    background: @table-background-secondary;
+                }
+            }
+        }
+    }
+
+    &-scroll {
+        display: block;
+        padding-bottom: .75rem;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    &-responsive {
+        .mq-max(@size-sm, {
+            thead,
+            th {
+                display: none;
+            }
+            tfoot {
+                td {
+                    display: block;
+                }
+            }
+            tbody {
+                tr {
+                    display: block;
+                    border-bottom: @table-border-width solid @table-border-color;
+
+                    &:last-child {
+                        border-bottom: 0;
+                    }
+                }
+                td {
+                    display: block;
+                    margin-left: 8em;
+                    border-bottom: none;
+
+                    &::before {
+                        display: inline-block;
+                        margin-left: -8em;
+                        min-width: 8em;
+                        font-weight: 700;
+                        content: attr(data-th) ": ";
+                    }
+                }
+            }
+        });
+    }
+}

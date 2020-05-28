@@ -1,0 +1,33 @@
+{
+    "file": "site\/modules\/MarkupSitemap\/MarkupSitemap.module.php",
+    "textdomain": "site--modules--markupsitemap--markupsitemap-module-php",
+    "translations": {
+        "6d14d36b58c922d899dcd59c5adb82c6": {
+            "text": "Es ist ein Fehler aufgetreten und die Sitemap-Optionen f\u00fcr diese Seite konnten nicht gespeichert werden."
+        },
+        "996175057eb5ac180dcb6436c62f8d31": {
+            "text": "Priorit\u00e4t der Seite"
+        },
+        "5af5b8cf93c1df3043065d0a583493b6": {
+            "text": "Setzen Sie die Priorit\u00e4t dieser Seite auf einer Skala von 0.0 bis 1.0."
+        },
+        "86ecaa290b31052ee204fb79ead600c8": {
+            "text": "Dieses Feld ist optional und die Priorit\u00e4t wird nur gesetzt wenn es hier eingetragen wurde."
+        },
+        "8544d62cf04cc5eee1b206287667eefa": {
+            "text": "Bilder ausschlie\u00dfen"
+        },
+        "36e3f7160670722b66857f654cf99db0": {
+            "text": "Der Sitemap f\u00fcr diesen Seiteneintrag keine Bilder hinzuf\u00fcgen"
+        },
+        "ad8e9eb362dd417352db71668fc91f0b": {
+            "text": "Seite ausschlie\u00dfen"
+        },
+        "f7f5fb232faaa74e65bd905395e6c8a8": {
+            "text": "Diese Seite in der Sitemap nicht anzeigen"
+        },
+        "8c37eeaca7e3ddcb6068b287bc22271b": {
+            "text": "Kindeseiten ausschlie\u00dfen"
+        }
+    }
+}

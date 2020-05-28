@@ -1,0 +1,469 @@
+<?php namespace ProcessWire;
+/**
+ * Smarty Engine
+ *
+ * Copyright:
+ *
+ * IDT Media - Goran Ilic & Tapio Löytty
+ * Web: www.i-do-this.com
+ * Email: hi@i-do-this.com
+ *
+ *
+ * Authors:
+ *
+ * Goran Ilic, <ja@ich-mach-das.at>
+ * Web: www.ich-mach-das.at
+ * 
+ * Tapio Löytty, <tapsa@orange-media.fi>
+ * Web: www.orange-media.fi
+ *
+ * 
+ * ProcessWire 3.x, Copyright 2017 by Ryan Cramer
+ * https://processwire.com
+ *
+ */
+
+class SmartyEngineRenderException extends WireException {}
+
+class SmartyEngine extends Wire implements Module 
+{
+	#----------------------------------------------------------------
+	# Constants
+	#----------------------------------------------------------------	
+
+	const COMPILE_DIR = 'SmartyEngine/template_c/';
+	const CACHE_DIR = 'SmartyEngine/cache/';
+
+	#----------------------------------------------------------------
+	# Attributes
+	#----------------------------------------------------------------
+
+	protected $smarty;
+	protected $defaultConfig = [ 
+		// Fuel variable to be assigned
+		'fuel_var' => 'smarty',	
+		// Relative path from the site directory where template files are stored. E.g. "templates/views/" resolves to "/site/templates/views/"
+		'templates_path' => 'templates/views/',
+		// Relative path from the site directory where template files are stored. E.g. "plugins/" resolves to "/site/plugins/"
+		'plugins_path' => 'templates/plugins/',
+		// Caching lifetime of template files in seconds. "0" to disable caching.
+		'cache_lifetime' => 0,
+		// Caching lifetime of template files in seconds. "0" to disable caching.
+		'compile_check' => true,		
+		// All API variables (page, input, config etc.) are accessible in smarty, e.g. {$page} for $page
+		'api_vars_available' => true,
+		// Extension of smarty template files
+		'ext' => 'tpl',
+		// Base template for fallback
+		'base' => 'base',		
+		// Render smarty templates automatically
+		'auto_rendering' => true,
+	]; 
+    
+	#----------------------------------------------------------------
+	# Magic methods
+	#----------------------------------------------------------------	
+	
+	public function __construct() 
+	{
+		require_once(__DIR__ . '/vendor/autoload.php');
+	}	
+
+	#----------------------------------------------------------------
+	# Interface methods: Module
+	#----------------------------------------------------------------	
+
+	public static function getModuleInfo() 
+	{
+		return array(
+			'title' => 'Smarty Engine', 
+			'author' => 'IDT Media',
+			'summary' => 'Smarty Engine', 
+			'version' => 001, 
+			'singular' => true, 
+			'autoload' => true, 
+			'requires' => array(
+				'PHP>=5.4',
+				'ProcessWire>=3.0'
+			)
+		);
+	}	
+
+	/**	
+	 * Module init
+	 * 
+	 * @return void
+	 */
+	public function init() 
+	{
+		// Build runtime config
+		$this->buildConfig();
+
+		// init smarty instance
+		$this->initSmarty();
+
+		// Assign fuel variable
+		if($var = $this->getConfig('fuel_var'))
+			$this->wire($var, $this);
+	}
+
+	/**
+	 * Module ready
+	 * 
+	 * @return void
+	 */
+    public function ready()
+    {
+    	// Rendering
+		$this->addHookAfter('Page::render', function($event) {
+		
+			if($this->page->template != 'admin' && $this->autoRendering()) {
+
+				if(!$this->getConfig('compile_check')) {
+
+					$this->addHookBefore('TemplateFile::render', function($event) {
+
+						if($this->isCached($event->object->filename))				
+							$event->object->halt = true;				
+					});	
+				}
+
+				$page = $this->wire('page', $event->object);
+
+				if(!$page->template->smartyRendering)
+					$event->return .= $this->render($page->template);
+			}
+		});	
+
+		// ProcessTemplate additions
+		if($this->page->process == 'ProcessTemplate') {
+			
+			$this->addHookAfter('ProcessTemplate::buildEditForm', $this, 'hookBuildEditForm');		
+			$this->addHookBefore('ProcessTemplate::executeSave', $this, 'hookExecuteSave');	
+		}		
+
+		// Cache clearing
+		$this->addHookAfter('Pages::save', $this, 'hookClearCache');	
+		$this->addHookAfter('Pages::delete', $this, 'hookClearCache');	
+    }	
+
+    /**
+     * Provides uninstall routines, while module being uninstalled by system
+     * 
+     * @return void
+     */
+    public function ___uninstall()
+    {
+        wireRmdir($this->config->paths->cache . self::COMPILE_DIR, true);
+        wireRmdir($this->config->paths->cache . self::CACHE_DIR, true);
+    }	    
+
+	#----------------------------------------------------------------
+	# Interface methods: WireData/Wire
+	#----------------------------------------------------------------		
+
+    /**
+     * Part of Wire::class
+     * Provides gateway to initialized smarty instance methods
+     * 
+     * @param  string
+     * @param  array
+     * @return mixed
+     */
+	protected function ___callUnknown($method, $arguments)
+	{		
+		$object = $this->smarty;
+		
+		if(is_object($object)) {		
+
+			$callto = array($object, $method);
+
+			if(is_callable($callto))
+				return call_user_func_array($callto, $arguments);				
+		}
+
+		return parent::___callUnknown($method, $arguments);
+	}
+
+	#----------------------------------------------------------------
+	# Hooked
+	#----------------------------------------------------------------			
+
+	protected function hookBuildEditForm($event)
+	{
+		$template = $event->arguments(0);
+
+		if($template->flags & Template::flagSystem) 
+			return;
+
+		// Template toggle
+		$f = wire('modules')->get('InputfieldCheckbox'); 
+		$f->name = 'smarty_rendering';		
+		$f->icon = 'lightbulb-o';
+		$f->label = $this->_x('Smarty', 'field-label');		
+		$f->label2 = $this->_x('Disable template rendering.', 'field-label');		
+		$f->description = $this->_('When checked, automatic rendering for this template is disabled.');
+		$f->checked = $template->smartyRendering ? true : false;		
+
+		$form = $event->return;	
+
+		// Get files tab by index InputfieldWrapper::class
+		if($t = $form->children->get(4)) {
+
+			// Get files InputfieldWrapper::class
+			if($first = $t->children->first()) {
+
+				if($first instanceof InputfieldWrapper)
+					$t = $first;
+			}
+
+			$t->add($f);
+		}
+	}	
+
+	protected function hookExecuteSave($event)
+	{
+		// Grab current tempalte id
+		$id = $this->input->id ? $this->input->id : -1;
+
+		// Load template or fatal
+		$template = $this->templates->get($id); 
+		if(!$template) 
+			throw new WireException("Unknown template"); 
+
+		// Set data
+		$value = $this->input->post('smarty_rendering') ?: 0;			
+		$template->set('smartyRendering', $value);
+	}		
+
+	protected function hookClearCache($event)
+	{
+		$tmp = $this->wire('page');
+		$page = $this->wire('page', $event->arguments(0));
+
+		$this->smarty->clearCache($this->smartyFilename($page->template), $this->getCacheId());
+
+		$this->wire('page', $tmp);
+	}
+
+	#----------------------------------------------------------------
+	# Class
+	#----------------------------------------------------------------    
+
+	/**
+	 * render function for performance reasons to skip Wire::runHooks, if there is nothing hooked to ___render()
+	 * 
+	 * @param  string
+	 * @return string
+	 */
+    public function render($filename = '', $ignoreBase = false)
+    {
+    	return self::isHooked('SmartyEngine::render()') ? $this->__call('render', [$filename, $ignoreBase]) : $this->___render($filename, $ignoreBase);
+    }
+
+    /**
+     * Hookable rendering method for rendering smarty output.
+     * 
+     * @param  string
+     * @return string
+     */
+    protected function ___render($filename = '', $ignoreBase = false)
+    {
+		// fuel variable auto assign
+		if ($this->getConfig('api_vars_available')) {
+			foreach ($this->wire->fuel() as $name => $object) {
+
+				switch ($name) {
+					case 'wire':
+					case 'classLoader':
+					case $this->getConfig('fuel_var'):
+						continue 2;
+				}
+
+				$this->smarty->assign($name, $object);
+			}
+		}				
+
+		// Execute
+        try {
+
+        	if(empty($filename))
+        		$filename = $this->page->template;
+		
+			return $this->smarty->fetch($this->smartyFilename($filename), $this->getCacheId());
+				
+        } catch (\SmartyException $e) {
+		
+			if(!$ignoreBase && $base = $this->getConfig('base'))
+            	return $this->smarty->fetch($this->smartyFilename($base), $this->getCacheId());
+            else
+            	throw new SmartyEngineRenderException($e->getMessage(), $e->getCode());
+        }
+    }
+
+    /**
+     * Overrides smarty method
+     * Test if smarty tpl file is cached.
+     * 
+     * @param  string Template filename
+     * @return boolean
+     */
+    public function isCached($filename = '')
+    {
+        if(empty($filename))
+        	$filename = $this->page->template;
+
+        $filename = $this->smartyFilename($filename);
+
+        if(!$res = $this->smarty->isCached($filename, $this->getCacheId()))
+			$res = $this->smarty->isCached($this->smartyFilename($this->getConfig('base')), $this->getCacheId());
+
+    	return $res;
+    }
+
+    /**
+     * Alternative way to set variables into smarty scope.
+     * 
+     * @param string
+     * @param mixed
+     */
+	public function set($key, $value) 
+	{
+		$this->smarty->assign($key, $value);	
+		return $this;
+	}
+
+	/**
+	 * Hook for toggling autoRendering via hooks
+	 * 
+	 * @return bool
+	 */
+	protected function ___autoRendering()
+	{
+		return $this->getConfig('auto_rendering');
+	}
+
+	#----------------------------------------------------------------
+	# Helpers
+	#----------------------------------------------------------------			
+
+	/**
+	 * Init smarty instance
+	 * 
+	 * @return void
+	 */
+	protected function initSmarty() 
+	{
+		$config = $this->wire('config');
+
+		$this->smarty = new \Smarty();
+
+		// Core
+        $this->smarty->setCompileDir($config->paths->cache . self::COMPILE_DIR);
+        $this->smarty->setCacheDir($config->paths->cache . self::CACHE_DIR);
+
+		// Plugins
+        $this->smarty->addPluginsDir($this->getPath('plugins_path'));
+
+ 		// Templates
+        $dir  = new \RecursiveDirectoryIterator($this->getPath('templates_path'), \RecursiveDirectoryIterator::SKIP_DOTS);
+		$files = new \RecursiveIteratorIterator($dir, \RecursiveIteratorIterator::SELF_FIRST);
+        
+        $this->smarty->addTemplateDir($this->getPath('templates_path'));
+        foreach ($files as $item) {
+        	
+        	if($item->isDir())        
+        		$this->smarty->addTemplateDir($item->getPathname());
+        }
+
+		// Caching
+        if ($cache_time = $this->getConfig('cache_lifetime')) {
+
+            $this->smarty->setCaching(\Smarty::CACHING_LIFETIME_CURRENT);
+            $this->smarty->setCacheLifetime((int)$cache_time);            
+        }	
+
+        $this->smarty->setCompileCheck( $this->getConfig('compile_check') ?: false );	
+
+		// Debugging
+		if($config->debug)
+			$this->smarty->setDebugging(true);	        
+	}
+
+    /**
+     * Generate a unique cache-ID.
+     * Cache-ID is generated based on page-id, user language, urlSegments, page numbers and template filename.
+     *
+     * @return string
+     */
+    protected function getCacheId()
+    {
+        $segments = array(
+            $this->wire('page')->template,
+            $this->wire('page')->id,
+            $this->wire('user')->language,
+            $this->wire('input')->urlSegmentStr,
+            $this->wire('input')->pageNum(),
+        );
+
+        return implode('_', $segments);
+    }
+
+    /**
+     *	Build runtime configuration
+     * 
+     * @return array
+     */
+	protected function buildConfig()
+	{
+		if($config = $this->config->smarty) 
+		{
+			foreach($config as $key=>$value) 
+			{
+				if(array_key_exists($key, $this->defaultConfig))
+					$this->defaultConfig[$key] = $value;
+			}
+		}
+
+		return $this->defaultConfig;
+	}
+
+	/**
+	 * Get runtime config variable
+	 * 
+	 * @param  string
+	 * @return mixed
+	 */
+	protected function getConfig($key = null)
+	{
+		$cfg = $this->defaultConfig;
+
+		if(!is_null($key)) 
+			return $cfg[$key] ?: null;
+
+		return $cfg;
+	}
+
+	/**
+	 * Get path for config variable
+	 * 
+	 * @param  string
+	 * @return string
+	 */
+    protected function getPath($option)
+    {
+        $path = ltrim($this->getConfig($option), '/');
+        return $this->config->paths->site . rtrim($path, '/') . '/';
+    }	
+
+    /**
+     * Converts PHP template names to smarty TPL files
+     * 
+     * @param  string
+     * @return string
+     */
+    protected function smartyFilename($filename)
+    {	
+    	return pathinfo($filename, PATHINFO_FILENAME). '.' . ltrim($this->getConfig('ext'), '.');
+    }
+}

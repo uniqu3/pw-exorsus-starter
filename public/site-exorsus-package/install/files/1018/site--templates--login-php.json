@@ -1,0 +1,12 @@
+{
+    "file": "site\/templates\/login.php",
+    "textdomain": "site--templates--login-php",
+    "translations": {
+        "15ad1138f660382b6f0f746e72a9290a": {
+            "text": "Sie wurden erfolgreich angemeldet."
+        },
+        "44ad88868266cb6eb63aee7b2d8745bb": {
+            "text": "Login fehlgeschlagen. Falscher Benutzername oder das Kennwort."
+        }
+    }
+}

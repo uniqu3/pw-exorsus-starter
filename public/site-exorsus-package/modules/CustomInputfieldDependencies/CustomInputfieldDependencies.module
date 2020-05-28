@@ -1,0 +1,319 @@
+<?php
+
+/**
+ *
+ * Custom Inputfield Dependencies
+ *
+ * @author Robin Sallis
+ * @credits Thanks to Adrian Jones for ideas and helpful feedback
+ *
+ * ProcessWire 3.x
+ * Copyright (C) 2011 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+class CustomInputfieldDependencies extends WireData implements Module {
+
+	/**
+	 * Module information
+	 */
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Custom Inputfield Dependencies',
+			'version' => '0.1.9',
+			'summary' => 'Extends inputfield dependencies so that inputfield visibility or required status may be determined at runtime by selector or custom PHP code.',
+			'href' => 'https://github.com/Toutouwai/CustomInputfieldDependencies',
+			'icon' => 'eye',
+			'autoload' => "template=admin",
+		);
+	}
+
+	protected $remove_fieldset_tabs = array();
+
+	protected $fields_in_hidden_fieldset = array();
+
+	/**
+	 * Upgrade
+	 */
+	public function ___upgrade($fromVersion, $toVersion) {
+		// Upgrade from v0.0.1
+		if($fromVersion === 1) {
+			$this->warning("You are upgrading from v0.0.1 – a breaking change was introduced in v0.0.2 and you must redefine your custom dependencies (sorry). See the module support thread in the forums.");
+		}
+	}
+
+	/**
+	 * Ready
+	 */
+	public function ready() {
+		$this->addHookAfter('Field::getInputfield', $this, 'evaluateCustomDependencies');
+		$this->addHookAfter('ProcessPageEdit::buildForm', $this, 'manipulatePageEdit');
+		$this->addHookAfter('Field::getConfigInputfields', $this, 'addFieldOptions');
+	}
+
+	/**
+	 * Evaluate any custom inputfield dependencies
+	 *
+	 * @param HookEvent $event
+	 */
+	protected function evaluateCustomDependencies(HookEvent $event) {
+		if($this->page->process !== 'ProcessPageEdit' && $this->page->process !== 'ProcessUser') return;
+
+		// Variables
+		$field = $event->object;
+		$inputfield = $event->return;
+		$page = $event->arguments(0);
+		$pages = $this->pages; // mainly to make this variable available as $pages in custom PHP
+
+		// Hide field if it is inside a hidden fieldset
+		if(isset($this->fields_in_hidden_fieldset[$page->id][$field->name])) {
+			$inputfield->collapsed = Inputfield::collapsedHidden;
+		} 
+
+		// Evaluate show-if conditions
+		if($field->show_if_custom_find) {
+			$matches = $pages->get("{$field->show_if_custom_find}, id={$page->id}");
+			if(!$matches->id) {
+				$this->removeInputfield($inputfield, $field, $page);
+			}
+		}
+		if($field->show_if_selector) {
+			$matches = $pages->get("{$field->show_if_selector}, id={$page->id}");
+			if(!$matches->id) {
+				$this->removeInputfield($inputfield, $field, $page);
+			}
+		}
+		if($field->show_if_custom_php) {
+			$result = eval($field->show_if_custom_php);
+			if($result !== true) {
+				$this->removeInputfield($inputfield, $field, $page);
+			}
+		}
+
+		// Evaluate required-if conditions
+		if($field->required && $field->required_if_custom_find) {
+			$matches = $pages->get("{$field->required_if_custom_find}, id={$page->id}");
+			if(!$matches->id) {
+				$inputfield->required = 0;
+			}
+		}
+		if($field->required && $field->required_if_selector) {
+			$matches = $pages->get("{$field->required_if_selector}, id={$page->id}");
+			if(!$matches->id) {
+				$inputfield->required = 0;
+			}
+		}
+		if($field->required && $field->required_if_custom_php) {
+			$result = eval($field->required_if_custom_php);
+			if($result === true) {
+				$inputfield->required = 1;
+			} else {
+				$inputfield->required = 0;
+			}
+		}
+	}
+
+	/**
+	 * Manipulate ProcessPageEdit (deal with FieldsetTab)
+	 *
+	 * @param HookEvent $event
+	 */
+	protected function manipulatePageEdit(HookEvent $event) {
+		$form = $event->return;
+		/* @var ProcessPageEdit $ppe */
+		$ppe = $event->object;
+		foreach($this->remove_fieldset_tabs as $tab_name) {
+			$fieldset_tab = $form->children("id=Inputfield_{$tab_name}")->first();
+			$form->children()->remove($fieldset_tab);
+			$ppe->removeTab("Inputfield_{$tab_name}");
+		}
+		$event->return = $form;
+	}
+
+	/**
+	 * Remove inputfield
+	 *
+	 * @param Inputfield $inputfield
+	 * @param Field $field
+	 */
+	protected function removeInputfield($inputfield, $field, $page) {
+		if($field->type == 'FieldtypeFieldsetTabOpen') {
+			$this->remove_fieldset_tabs[] = $field->name;
+		} elseif(in_array($field->type, array('FieldtypeFieldsetOpen', 'FieldtypeFieldsetGroup'))) {
+			$fieldset_start = false;
+			foreach($page->template->fields as $template_field) {
+				if($template_field->id === $field->id) {
+					$fieldset_start = true;
+				} elseif($template_field->name === "{$field->name}_END") {
+					break;
+				} elseif($fieldset_start) {
+					$this->fields_in_hidden_fieldset[$page->id][$template_field->name] = '';
+				}
+			}
+			$inputfield->collapsed = Inputfield::collapsedHidden;
+		} else {
+			$inputfield->collapsed = Inputfield::collapsedHidden;
+		}
+	}
+
+	/**
+	 * Helper function for fields in a repeater
+	 *
+	 * @param Page $page
+	 * @return Page
+	 */
+	public function getEditedPage($page) {
+		if($page instanceof RepeaterPage) {
+			return $this->getEditedPage($page->getForPage());
+		} else {
+			return $page;
+		}
+	}
+
+	/**
+	 * Add field options
+	 *
+	 * @param HookEvent $event
+	 */
+	protected function addFieldOptions(HookEvent $event) {
+		// The field being edited
+		$field = $event->object;
+
+		// The inputfield wrapper
+		$wrapper = $event->return;
+
+		// Change to template context of field if fieldgroup ID present in input
+		$fieldgroup_id = (int) $this->input->post->fieldgroup_id ?: (int) $this->input->get->fieldgroup_id;
+		$fieldgroup = $this->fieldgroups->get($fieldgroup_id);
+		if($fieldgroup) $field = $fieldgroup->getFieldContext($field->name);
+
+		// Add extra show-if fields
+		$f_before = $wrapper->getChildByName('showIf');
+		// FieldsetTab is a special case
+		if(!$f_before && $field->type == 'FieldtypeFieldsetTabOpen') $f_before = $wrapper->getChildByName('visibility');
+		if(!$f_before) return; // return if no showIf field
+		$f = $this->makeCustomPhpField('show_if_custom_php');
+		$f->value = $field->show_if_custom_php;
+		$wrapper->insertAfter($f, $f_before);
+
+		$f = $this->makeSelectorField('show_if_selector');
+		$f->value = $field->show_if_selector;
+		$wrapper->insertAfter($f, $f_before);
+
+		$f = $this->makeCustomFindField('show_if_custom_find');
+		$f->value = $field->show_if_custom_find;
+		$wrapper->insertAfter($f, $f_before);
+
+		$fs_visibility = $wrapper->getChildByName('visibility');
+		if($field->show_if_custom_find || $field->show_if_selector || $field->show_if_custom_php) {
+			$fs_visibility->collapsed = Inputfield::collapsedNo;
+		}
+
+		// Add extra required-if fields
+		$f_before = $wrapper->getChildByName('requiredIf');
+		if(!$f_before) return; // return if no requiredIf field, e.g. Fieldset
+		$f = $this->makeCustomPhpField('required_if_custom_php');
+		$f->value = $field->required_if_custom_php;
+		$wrapper->insertAfter($f, $f_before);
+
+		$f = $this->makeSelectorField('required_if_selector');
+		$f->value = $field->required_if_selector;
+		$wrapper->insertAfter($f, $f_before);
+
+		$f = $this->makeCustomFindField('required_if_custom_find');
+		$f->value = $field->required_if_custom_find;
+		$wrapper->insertAfter($f, $f_before);
+
+	}
+
+	/**
+	 * Make custom find field
+	 *
+	 * @param string $field_name
+	 * @return InputfieldSelector
+	 */
+	protected function makeCustomFindField($field_name) {
+		if($field_name === 'show_if_custom_find') {
+			$label = $this->_('Show only if page is matched by custom find');
+			$description = $this->_('Add one or more fields below to create a $pages->find() query. If the edited page is matched by the selector then the field is shown. If you prefer to enter this manually, use the "Show only if page is matched by selector" option below instead.');
+			$icon = 'question-circle';
+		} elseif($field_name === 'required_if_custom_find') {
+			$label = $this->_('Required only if page is matched by custom find');
+			$description = $this->_('Add one or more fields below to create a $pages->find() query. If the edited page is matched by the selector then the field is required. If you prefer to enter this manually, use the "Required only if page is matched by selector" option below instead.');
+			$icon = 'asterisk';
+		}
+		$f = $this->modules->get('InputfieldSelector');
+		$f->name = $field_name;
+		$f->label = $label;
+		$f->description = $description;
+		$f->icon = $icon;
+		if($field_name === 'required_if_custom_find') $f->showIf = "required>0";
+		$f->collapsed = Inputfield::collapsedBlank;
+		return $f;
+	}
+
+	/**
+	 * Make selector field
+	 *
+	 * @param string $field_name
+	 * @return InputfieldText
+	 */
+	protected function makeSelectorField($field_name) {
+		if($field_name === 'show_if_selector') {
+			$label = $this->_('Show only if page is matched by selector');
+			$description = $this->_('This selector will be passed to a $pages->find("your selector"); statement. If the edited page is matched by the selector then the field is shown.');
+			$icon = 'question-circle';
+		} elseif($field_name === 'required_if_selector') {
+			$label = $this->_('Required only if page is matched by selector');
+			$description = $this->_('This selector will be passed to a $pages->find("your selector"); statement. If the edited page is matched by the selector then the field is required.');
+			$icon = 'asterisk';
+		}
+		$f = $this->modules->get('InputfieldText');
+		$f->name = $field_name;
+		$f->label = $label;
+		$f->description = $description;
+		$f->icon = $icon;
+		if($field_name === 'required_if_selector') $f->showIf = "required>0";
+		$f->collapsed = Inputfield::collapsedBlank;
+		return $f;
+	}
+
+	/**
+	 * Make custom PHP field
+	 *
+	 * @param string $field_name
+	 * @return InputfieldTextarea|\InputfieldAceExtended
+	 */
+	protected function makeCustomPhpField($field_name) {
+		if($field_name === 'show_if_custom_php') {
+			$label = $this->_('Show only if custom PHP returns true');
+			$description = $this->_('This statement has access to the $page and $pages API variables, where $page refers to the page being edited. If the snippet returns boolean true then the field is shown.');
+			$icon = 'question-circle';
+		} elseif($field_name === 'required_if_custom_php') {
+			$label = $this->_('Required only if custom PHP returns true');
+			$description = $this->_('This statement has access to the $page and $pages API variables, where $page refers to the page being edited. If the snippet returns boolean true then the field is required.');
+			$icon = 'asterisk';
+		}
+		if($this->modules->isInstalled('InputfieldAceExtended')) {
+			$f = $this->modules->get('InputfieldAceExtended');
+			$f->mode = 'php';
+			$f->modes = array('php');
+			$f->theme = 'monokai';
+		} else {
+			$f = $this->modules->get('InputfieldTextarea');
+		}
+		$f->name = $field_name;
+		$f->label = $label;
+		$f->description = $description;
+		$f->rows = 5;
+		$f->icon = $icon;
+		if($field_name === 'required_if_custom_php') $f->showIf = "required>0";
+		$f->collapsed = Inputfield::collapsedBlank;
+		return $f;
+	}
+
+}

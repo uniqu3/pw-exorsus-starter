@@ -1,0 +1,627 @@
+<?php
+
+/**
+ * Hooks for Process Changelog
+ *
+ * This module stores changelog data to custom database table. Separated from
+ * main module to keep ProcessWire from autoloading any unnecessary code.
+ * 
+ * For detailed information, installation instructions etc. see README.md.
+ *
+ * @copyright 2013-2019 Teppo Koivula
+ * @license https://www.gnu.org/licenses/gpl-2.0.txt GNU General Public License, version 2
+ */
+class ProcessChangelogHooks extends WireData implements Module, ConfigurableModule {
+
+    /**
+     * Return information about this module (required)
+     *
+     * @return array
+     */
+    public static function getModuleInfo() {
+        return array(
+            'title' => 'Changelog Hooks',
+            'summary' => 'Hooks required by Process Changelog for collecting data',
+            'href' => 'https://modules.processwire.com/modules/process-changelog/',
+            'author' => 'Teppo Koivula',
+            'version' => '1.4.1',
+            'singular' => true,
+            'autoload' => true,
+            'requires' => 'ProcessChangelog',
+        ); 
+    }
+
+    /**
+     * Default configuration for this module
+     *
+     * The point of putting this in it's own function is so that you don't have to specify
+     * these defaults more than once.
+     *
+     * @return array
+     */
+    static public function getDefaultData() {
+        return array(
+            'operations' => array(
+                "hid" => __("hid"),
+                "unhid" => __("unhid"),
+                "added" => __("added"),
+                "moved" => __("moved"),
+                "edited" => __("edited"),
+                "trashed" => __("trashed"),
+                "renamed" => __("renamed"),
+                "deleted" => __("deleted"),
+                "restored" => __("restored"),
+                "published" => __("published"),
+                "unpublished" => __("unpublished"),
+            ),
+            'ignored_templates' => array(),
+            'ignored_fields' => array(),
+            'ignored_roles' => array(),
+            'ignored_users' => array(),
+            'log_caller' => null,
+            'data_max_age' => null,
+            'page_edit_changelog' => 1,
+            'schema_version' => 1,
+        );
+    }
+    
+    /**
+     * Name of the database table used by this module
+     * 
+     * @param string
+     */
+    const TABLE_NAME = 'process_changelog';
+    
+    /**
+     * Schema version for database table used by this module
+     * 
+     * @param int
+     */
+    const SCHEMA_VERSION = 2;
+
+    /**
+     * Populate the default config data
+     *
+     * ProcessWire will automatically overwrite it with anything the user has specifically configured.
+     * This is done in construct() rather than init() because ProcessWire populates config data after
+     * construct(), but before init().
+     *
+     */
+    public function __construct() {
+        foreach(self::getDefaultData() as $key => $value) {
+            $this->$key = $value;
+        }
+    }
+
+    /**
+     * Module configuration
+     *
+     * @param array $data
+     * @return InputfieldWrapper
+     */
+    static public function getModuleConfigInputfields(array $data) {
+
+        // this is a container for fields, basically like a fieldset
+        $fields = new InputfieldWrapper();
+
+        // since this is a static function, we can't use $this->modules, so get them from the global wire() function
+        $modules = wire('modules');
+
+        // merge default config settings (custom values overwrite defaults)
+        $defaults = self::getDefaultData();
+        $data = array_merge($defaults, $data);
+
+        // which operations should be tracked?
+        $field = $modules->get("InputfieldCheckboxes");
+        $field->name = "operations";
+        $field->label = __("Operations");
+        $field->addOptions($defaults['operations']);
+        $field->value = $data['operations'] === $defaults['operations'] ? array_keys($defaults['operations']) : $data['operations'];
+        $field->description = __("You can choose which operations to keep track of here.");
+        $field->notes = __("Note that unchecking operations later won't remove rows containing them from database. Instead new rows of those types will no longer be created and existing ones won't be visible anymore.");
+        $fields->add($field);
+        
+        // templates that should be ignored when logging changes
+        $field = $modules->get("InputfieldAsmSelect");
+        $field->name = "ignored_templates";
+        $field->label = __("Ignored templates");
+        $field->description = __("Ignore these templates completely when logging changes.");
+        $field->notes = __("Note that adding a template here will not remove any data stored for it.");
+        $field->addOptions(wire('templates')->getAll()->getArray());
+        $field->value = $data[$field->name];
+        $fields->add($field);
+
+        // fields that should be ignored when logging changes
+        $field = $modules->get("InputfieldAsmSelect");
+        $field->name = "ignored_fields";
+        $field->label = __("Ignored fields");
+        $field->description = __("Ignore these fields completely when logging changes.");
+        $field->notes = __("Note that adding a field here will **not** remove any data stored for it.");
+        $field->addOptions(wire('fields')->getAll()->getArray());
+        $field->value = $data[$field->name];
+        $fields->add($field);
+        
+        // roles that should be ignored when logging changes
+        $field = $modules->get("InputfieldAsmSelect");
+        $field->name = "ignored_roles";
+        $field->label = __("Ignored roles");
+        $field->description = __("Ignore these roles completely when logging changes.");
+        $field->notes = __("Note that adding a role here will **not** remove any data stored for it. Also note that the guest role has a special meaning: in the case of other roles the user is ignored if she has any of the ignored rules, but for guest role the user is only ignored if she has the guest role *and no other roles*.");
+        foreach (wire('pages')->find('template=role, check_access=0')->explode(['id', 'name']) as $role) {
+            $field->addOption($role['id'], $role['name']);
+        }
+        $field->value = $data[$field->name];
+        $fields->add($field);
+
+        // users that should be ignored when logging changes
+        $field = $modules->get("InputfieldAsmSelect");
+        $field->name = "ignored_users";
+        $field->label = __("Ignored users");
+        $field->description = __("Ignore these users completely when logging changes.");
+        $field->notes = __("Note that adding a user here will **not** remove any data stored for it.");
+        $user_templates = wire('config')->userTemplateIds ? implode('|', wire('config')->userTemplateIDs) : 'user';
+        foreach (wire('pages')->find('template=' . $user_templates . ', check_access=0')->explode(['id', 'name']) as $role) {
+            $field->addOption($role['id'], $role['name']);
+        }
+        $field->value = $data[$field->name];
+        $fields->add($field);
+
+        // should caller (script or URL that triggered this action) be logged?
+        $field = $modules->get("InputfieldSelect");
+        $field->name = "log_caller";
+        $field->label = __("Caller logging");
+        $field->description = __("Enable logging of path/URL for script that triggered action?");
+        $field->addOptions(array(
+            null => __("Disabled"),
+            'external' => __("For external callers only (CLI and external applications)"),
+            'all' => __('For all callers (CLI, external applications and ProcessWire itself)'),
+        ));
+        $field->notes = __("This can be useful when trying to find out why certain change was triggered. On the other hand it adds to the size of your database table and slightly slows script execution, which is why it's disabled by default.");
+        $field->value = $data[$field->name];
+        $fields->add($field);
+
+        // for how long should collected data be retained?
+        $field = $modules->get("InputfieldSelect");
+        $field->name = "data_max_age";
+        $field->label = __("Data max age");
+        $field->description = __("For how long should we retain collected data?");
+        $field->notes = __("Automatic cleanup requires LazyCron module, which isn't currently installed.");
+        if ($modules->isInstalled("LazyCron")) {
+            $field->addOptions(array(
+                '1 WEEK' => __('1 week'),
+                '2 WEEK' => __('2 weeks'),
+                '1 MONTH' => __('1 month'),
+                '2 MONTH' => __('2 months'),
+                '3 MONTH' => __('3 months'),
+                '6 MONTH' => __('6 months'),
+                '1 YEAR' => __('1 year'),
+            ));
+            $field->notes = __("Leave empty to disable automatic cleanup.");
+            $field->value = $data[$field->name];
+        }
+        $fields->add($field);
+        
+        // should a Changelog section be added to the Settings tab of the page editor?
+        $field = $modules->get("InputfieldSelect");
+        $field->name = "page_edit_changelog";
+        $field->label = __("Add Changelog to the page editor");
+        $field->description = __("Add a Changelog section to the Settings tab of the page editor?");
+        if (!$data['data_max_age']) {
+            $field->notes = __("Please note that since you haven't specified a max age for your changelog data, disabling the Changelog section may be preferable. Otherwise large amounts of changelog data may result in slow load times for the page editor.");
+        }
+        $field->addOptions(array(
+            null => __("Disabled"),
+            1 => __("For everyone"),
+            2 => __("For users with the Changelog permission"),
+            3 => __("For superusers only"),
+        ));
+        $field->value = $data[$field->name];
+        $fields->add($field);
+
+        return $fields;
+
+    }
+
+    /**
+     * Initialization function
+     *
+     * This function attachs hooks used for change tracking, triggers periodical
+     * cleanups and checks if there's a database schema update available.
+     *
+     */
+    public function init() {
+
+        // update the database schema (if not the latest one yet)
+        if ($this->schema_version < self::SCHEMA_VERSION) {
+            $this->updateDatabaseSchema();
+        }
+
+        // trigger cleanup once a day
+        if ($this->data_max_age) {
+            $this->addHook("LazyCron::everyDay", $this, 'cleanup');
+        }
+
+        // add hooks that gather information and trigger insert
+        $this->pages->addHook('added', $this, 'logPageEvent'); 
+        $this->pages->addHook('moved', $this, 'logPageEvent'); 
+        $this->pages->addHook('renamed', $this, 'logPageEvent'); 
+        $this->pages->addHook('deleted', $this, 'logPageEvent'); 
+        $this->pages->addHook('saveReady', $this, 'logPageEvent'); 
+        $this->pages->addHook('saveFieldReady', $this, 'logPageEvent'); 
+
+    }
+
+    /**
+     * Initialization when $page is known
+     *
+     * Attach hook to ProcessPageEdit::buildFormSettings in order to display
+     * recent changes in the context of page editor.
+     *
+     */
+    public function ready() {
+        if ($this->page_edit_changelog && $this->page->template == 'admin' && $this->page->process == 'ProcessPageEdit') {
+            if ($this->page_edit_changelog == 1 || $this->page_edit_changelog == 2 && $this->user->hasPermission('Changelog') || $this->user->isSuperuser()) {
+                $this->addHookAfter('ProcessPageEdit::buildFormSettings', $this, 'hookPageEdit');
+            }
+        }
+    }
+
+    /**
+     * Adds a Changelog section to the Settings tab in the page editor
+     *
+     */
+    public function hookPageEdit(HookEvent $event) {
+        $form = $event->return;
+        $process = $event->object;
+        $editPage = $process->getPage();
+        try {
+            $stmt = $this->database->prepare("SELECT COUNT(*), MIN(timestamp) FROM " . self::TABLE_NAME . " WHERE pages_id=:id");
+            $stmt->bindValue(':id', $editPage->id, PDO::PARAM_INT); 
+            $stmt->execute();
+            list($num_edits, $timestamp) = $stmt->fetch(PDO::FETCH_NUM);
+        } catch(Exception $e) {
+            $this->error($e->getMessage());
+            $num_edits = 0;
+        }
+        if ($num_edits) {
+            $field = $this->modules->get('InputfieldMarkup');
+            $processPage = $this->pages->get('process=' . $this->modules->getModuleID('ProcessChangelog'));
+            $field->label = $this->_('Changelog'); // Changelog field label
+            $field->icon = "code-fork";
+            $out = sprintf($this->_n('%d edit since %s', '%d edits since %s', $num_edits), $num_edits, $timestamp);
+            if ($this->user->hasPermission('changelog')) {
+                $out .= " - <a href='{$processPage->url}?pages_id={$editPage->id}'>" . $this->_('View History') . "</a>";
+            }
+            $field->attr('value', "<p>{$out}</p>");
+            $form->append($field);
+        }
+    }
+    
+    /**
+     * Delete data older than defined interval
+     *
+     * @param string|HookEvent $interval Interval, defaults to data_max_age setting
+     */
+    public function cleanup($interval = null) {
+
+        if ($interval instanceof HookEvent) $interval = $this->data_max_age;
+        if (is_null($interval) && is_null($this->data_max_age)) return;
+        else if (is_null($interval)) $interval = $this->data_max_age;
+
+        $interval = $this->database->escapeStr($interval);
+        $sql = "DELETE FROM " . self::TABLE_NAME . " WHERE timestamp < DATE_SUB(NOW(), INTERVAL $interval)";
+        try {
+            $this->database->exec($sql);
+        } catch(Exception $e) {
+            $this->error($e->getMessage());
+        }
+        
+    }
+
+    /**
+     * Based on event method and other information available this
+     * method parses required data and triggers insert method.
+     *
+     * @param HookEvent $event
+     */
+    public function logPageEvent(HookEvent $event) {
+
+        $page = $event->arguments[0];
+        $field = isset($event->arguments[1]) ? $event->arguments[1] : null;
+
+        // don't log operations for repeaters or admin pages
+        if ($page instanceof RepeaterPage || $page->template == "admin") return;
+        
+        // don't log operations for ignored templates
+        if (!empty($this->ignored_templates) && in_array($page->template->id, $this->ignored_templates)) return;
+
+        // don't log operations by ignored user roles
+        if (!empty($this->ignored_roles)) {
+            foreach ($this->ignored_roles as $ignored_role) {
+                if ($ignored_role == $this->config->guestUserRolePageID) {
+                    // Note: guest role needs special treatment, or ignoring it wouldn't be of any
+                    // real use. In this case we'll only ignore users with **only** the guest role.
+                    if ($this->user->roles->count == 1) return;
+                } else if ($this->user->hasRole($ignored_role)) {
+                    return;
+                }
+            }
+        }
+
+        // don't log operations by ignored users
+        if (!empty($this->ignored_users) && in_array($this->user->id, $this->ignored_users)) return;
+
+        // grab operation from event
+        $operation = $event->method;
+        if ($operation == "saveReady" || $operation == "saveFieldReady") $operation = "edited";
+
+        // only continue if this operation is set to be logged
+        if (!in_array($operation, $this->operations)) return;
+
+        $fields_edited = array();
+        if ($operation == "edited") {
+            // skip new pages or pages being restored/trashed
+            if (!$page->id || $page->parentPrevious) return;
+            if ($page->isChanged()) {
+                if ($field && $page->isChanged($field->name)) {
+                    // only one field was edited (saveFieldReady)
+                    $fields_edited[$field->id] = $field->name;
+                } else {
+                    // one or more fields were edited (saveReady)
+                    foreach ($page->template->fields as $field) {
+                        if ($page->isChanged($field->name)) {
+                            $fields_edited[$field->id] = $field->name;
+                        }
+                    }
+                }
+                // filter out any ignored fields
+                if (!empty($this->ignored_fields) && !empty($fields_edited)) {
+                    $fields_edited = array_diff_key($fields_edited, array_flip($this->ignored_fields));
+                }
+                // only continue if at least one field has been changed (and
+                // if status has changed, trigger a new event for that)
+                if (empty($fields_edited)) {
+                    if ($page->isChanged("status")) {
+                        $this->triggerStatusEvents($event);
+                    }
+                    if ($this->modules->isInstalled("LanguageSupportPageNames")) {
+                        // if multi-language page names are enabled, we need to
+                        // fake a rename action when non-default name changes
+                        if ($changes = $page->getChanges()) {
+                            foreach ($changes as $change) {
+                                if (strpos($change, "name") === 0 && preg_match("/^name([0-9]+)$/", $change, $matches)) {
+                                    $lang = $this->languages->get((int) $matches[1]);
+                                    if ($lang && $lang->id) {
+                                        $this->pages->uncache($page);
+                                        $event->pageNamePrevious = $this->pages->get($page->id)->get($change) ?: $page->name;
+                                        $event->pageName = $page->get($change);
+                                        $event->pageURL = $page->localUrl($lang);
+                                        $event->method = "renamed";
+                                        $this->logPageEvent($event);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return;
+                }
+            } else {
+                // nothing has changed
+                return;
+            }
+        } else if ($operation == "renamed") {
+            // if previous parent is trash, page is being restored
+            if ($page->parentPrevious instanceof Page && $page->parentPrevious->id == $this->config->trashPageID) return;
+            // if current parent is trash, page is being trashed
+            else if ($page->parent->id == $this->config->trashPageID) return;
+        } else if ($operation == "moved") {
+            if ($page->parent->id == $this->config->trashPageID) {
+                // page is being trashed
+                $operation = "trashed";
+            } else if ($page->parentPrevious->id == $this->config->trashPageID) {
+                // page is being restored
+                $operation = "restored";
+            }
+        }
+
+        // details about page being edited, trashed, moved etc.
+        $details = array();
+
+        if ($page->title) $details['Page title'] = $page->title;
+
+        $details['Page name'] = $event->pageName ?: $page->name;
+        if ($event->pageNamePrevious || $page->namePrevious) {
+            $details[($operation == "moved" ? 'Page name' : 'Previous page name')] = $event->pageNamePrevious ?: $page->namePrevious;
+        }
+
+        $details['Template name'] = $page->template->name;
+        if ($page->templatePrevious) $details['Previous template name'] = $page->templatePrevious->name;
+
+        $details['Page URL'] = $event->pageURL ?: $page->url;
+        if ($page->parentPrevious && $operation != "edited") {
+            // for pages being edited current or previous parent is irrelevant
+            // data since changing parent will also trigger "moved" operation.
+            $details['Previous page URL'] = $page->parentPrevious->url;
+            if ($page->namePrevious) $details['Previous page URL'] .= $page->namePrevious . "/";
+            else $details['Previous page URL'] .= $page->name . "/";
+        }
+
+        // note: currently only "edited" operation keeps track of edited fields
+        if (!empty($fields_edited)) $details['Fields edited'] = implode(", ", $fields_edited);
+
+        // find out which script / URL triggered this particular action
+        if ($this->log_caller && $caller = $this->getCaller()) $details['Caller'] = $caller;
+
+        $this->insert($operation, $page->id, $page->template->id, $details);
+
+        // if status has changed and current event doesn't reflect that, log extra event(s)
+        if ($page->isChanged('status') && !in_array($operation, array("unpublished", "published", "hid", "unhid"))) {
+            $this->triggerStatusEvents($event);
+        }
+
+    }
+
+    /**
+     * Trigger additional status-related events for given event
+     *
+     * @param HookEvent $event
+     */
+    private function triggerStatusEvents(HookEvent $event) {
+
+        $page = $event->arguments[0];
+
+        // was this page was hidden or unhidden?
+        if ($page->is(Page::statusHidden) !== (bool) ($page->statusPrevious & Page::statusHidden)) {
+            $event->method = $page->is(Page::statusHidden) ? "hid" : "unhid";
+            $this->logPageEvent($event);
+        }
+
+        // was this page published or unpublished?
+        if ($page->is(Page::statusUnpublished) !== (bool) ($page->statusPrevious & Page::statusUnpublished)) {
+            $event->method = $page->is(Page::statusUnpublished) ? "unpublished" : "published";
+            $this->logPageEvent($event);
+        }
+    }
+
+    /**
+     * Find out which script / URL triggered current action
+     *
+     * @return string|null
+     */
+    private function getCaller() {
+
+        $index = $this->config->paths->root . "index.php";
+        $caller = realpath($_SERVER['SCRIPT_FILENAME']);
+        $caller_is_processwire = $caller === $index;
+
+        if (isset($_SERVER['HTTP_HOST'])) {
+            if (!isset($_SERVER['REQUEST_URI'])) {
+                // IIS support, based on http://davidwalsh.name/iis-php-server-request_uri
+                $qs = isset($_SERVER['QUERY_STRING']) ? "?" . $_SERVER['QUERY_STRING'] : "";
+                $_SERVER['REQUEST_URI'] = substr($_SERVER['PHP_SELF'], 1) . $qs;
+            }
+            $scheme = $this->config->https ? "https://" : "http://";
+            $caller = $scheme . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+        }
+
+        if ($this->log_caller == "all" || !$caller_is_processwire) {
+            return $caller;
+        }
+
+    }
+
+    /**
+     * Insert row into database
+     *
+     * @param string $operation
+     * @param int $pages_id
+     * @param int $templates_id
+     * @param array $details
+     * @throws WireException if operation is unknown
+     */
+    private function insert($operation, $pages_id, $templates_id, $details = array()) {
+
+        if (!in_array($operation, $this->operations)) throw new WireException('Unknown operation');
+
+        $pages_id = (int) $pages_id;
+        $templates_id = (int) $templates_id;
+        $user_id = (int) $this->user->id;
+        $username = $this->user->name;
+
+        // validate and encode details to JSON
+        if ($details) {
+            foreach ($details as &$detail) {
+                $detail = str_replace("'", "", $detail);
+                $detail = wire()->sanitizer->text($detail);
+            }
+            $details = json_encode($details);
+        } else $details = null;
+
+        // insert new row into database
+        $sql = "INSERT INTO " . self::TABLE_NAME . " " .
+               "(user_id, username, pages_id, templates_id, operation, data) VALUES " .
+               "(:user_id, :username, :pages_id, :templates_id, :operation, :data) ";
+        try {
+            $stmt = $this->database->prepare($sql); 
+            $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+            $stmt->bindValue(':username', $username, PDO::PARAM_STR);
+            $stmt->bindValue(':pages_id', $pages_id, PDO::PARAM_INT);
+            $stmt->bindValue(':templates_id', $templates_id, PDO::PARAM_INT);
+            $stmt->bindValue(':operation', $operation, PDO::PARAM_STR);
+            $stmt->bindValue(':data', $details, PDO::PARAM_STR);
+            $stmt->execute();
+        } catch(Exception $e) {
+            $this->error($e->getMessage());
+        }
+        
+    }
+
+    /**
+     * Update database schema
+     *
+     * This method applies incremental updates until latest schema version is
+     * reached, while also keeping schema_version config setting up to date.
+     * 
+     * @throws WireException if database schema version isn't recognized
+     * @throws WireException if updating schema to specific version fails
+     */
+    private function updateDatabaseSchema() {
+        while ($this->schema_version < self::SCHEMA_VERSION) {
+            ++$this->schema_version;
+            switch ($this->schema_version) {
+                case 2:
+                    $sql = "ALTER TABLE " . self::TABLE_NAME . " ADD templates_id INT(10) UNSIGNED NOT NULL DEFAULT 0 AFTER pages_id";
+                    break;
+                default:
+                    throw new WireException("Unrecognized database schema version: {$this->schema_version}");
+            }
+            if ($sql && $this->database->exec($sql) !== false) {
+                $configData = $this->modules->getModuleConfigData($this);
+                $configData['schema_version'] = $this->schema_version;
+                $this->modules->saveModuleConfigData($this, $configData);
+            } else {
+                throw new WireException("Couldn't update database schema to version {$this->schema_version}");
+            }
+        }
+    }
+    
+    /**
+     * Called only when this module is installed
+     *
+     * Creates new custom database table for storing data.
+     *
+     */
+    public function ___install() {
+
+        // create required database table. note that updateDatabaseSchema will
+        // make changes to it's schema, so it's not guaranteed to stay as-is.
+        $sql = "
+        CREATE TABLE " . self::TABLE_NAME . " (
+            id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            user_id INT(10) UNSIGNED NOT NULL DEFAULT 0,
+            username VARCHAR(128) DEFAULT NULL,
+            pages_id INT(10) UNSIGNED NOT NULL DEFAULT 0,
+            operation VARCHAR(128) NOT NULL,
+            data TEXT DEFAULT NULL,
+            timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE = MYISAM;
+        ";
+        $this->database->exec($sql);
+
+        // tell the user that we've created new database table
+        $this->message("Created Table: " . self::TABLE_NAME); 
+
+    }
+
+    /**
+     * Called only when this module is uninstalled
+     *
+     * Drops database table created during installation.
+     *
+     */
+    public function ___uninstall() {
+        $this->message("Deleting Table: " . self::TABLE_NAME);
+        $this->database->exec("DROP TABLE IF EXISTS " . self::TABLE_NAME);
+    }
+    
+}

@@ -1,0 +1,24 @@
+{
+    "file": "site\/templates\/_translations.php",
+    "textdomain": "site--templates--_translations-php",
+    "translations": {
+        "cca8493f6f1bd794b75879a6d8a7bbc7": {
+            "text": "Username"
+        },
+        "98176b7da95f6fd994fe285e06241163": {
+            "text": "Password"
+        },
+        "0db7fc417f792fc727eba9668b46c6f1": {
+            "text": "dismiss"
+        },
+        "614ceb7dcd668f0f10ce4069cd886d59": {
+            "text": "decline"
+        },
+        "378ac5977ef207f0c4d1cc895cf5f720": {
+            "text": "accept"
+        },
+        "3957bf55d7aef79deebc458b8632a8aa": {
+            "text": "Monday to Friday"
+        }
+    }
+}

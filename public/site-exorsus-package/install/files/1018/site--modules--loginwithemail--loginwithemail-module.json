@@ -1,0 +1,12 @@
+{
+    "file": "site\/modules\/LoginWithEmail\/LoginWithEmail.module",
+    "textdomain": "site--modules--loginwithemail--loginwithemail-module",
+    "translations": {
+        "67e09762889a535e211f8cb2ff569150": {
+            "text": "Benutzername oder E-Mail Adresse"
+        },
+        "9f9a068152a8c8ef9cb6eb8de34dfbd0": {
+            "text": "Anmeldung nicht m\u00f6glich, da mehr als ein Konto diese E-Mail-Adresse verwendet."
+        }
+    }
+}

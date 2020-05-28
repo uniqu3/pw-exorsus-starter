@@ -1,0 +1,20 @@
+{
+    "name": "processwire/extensions",
+    "description": "Extensions and classes for custom templates",
+    "authors": [
+        {
+            "name": "Goran Ilic (uniqu3)",
+            "email": "uniqu3e@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.8",
+        "ext-gd": "*",
+        "jeroendesloovere/vcard": "^1.7"
+    },
+    "autoload": {
+        "classmap": [
+            "classes"
+        ]
+    }
+}

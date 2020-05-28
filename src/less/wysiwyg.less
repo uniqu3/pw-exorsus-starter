@@ -1,0 +1,43 @@
+//
+// Paths 
+// ========================================================================
+
+@components: "./theme/components";
+@fonts: "./../../../fonts";
+@framework: "./framework";
+@plugins: "./theme/plugins";
+@mixins: "./mixins";
+@theme: "./theme";
+@utilities: "./theme/utilities";
+@variables: "./theme/variables";
+
+// Imports
+// ========================================================================
+// Framework
+@import "@{framework}/variables/_variables";
+@import "@{framework}/mixins/_helper";
+@import "@{framework}/mixins/_mixins";
+@import "@{framework}/base/global";
+@import "@{framework}/base/typography";
+@import "@{framework}/utilities/text";
+@import "@{framework}/utilities/position";
+@import "@{framework}/utilities/colour";
+@import "@{framework}/utilities/media";
+@import "@{framework}/utilities/visibility";
+@import "@{framework}/components/button";
+@import "@{framework}/components/table";
+@import "@{framework}/components/tag";
+// Theme
+@import "@{variables}/_theme-variables";
+@import "@{utilities}/fonts";
+@import "@{theme}/layout";
+
+body {
+    background: #fff;
+    padding: 20px;
+}
+a:hover,
+a:active,
+a:focus {
+    text-decoration: none;
+}

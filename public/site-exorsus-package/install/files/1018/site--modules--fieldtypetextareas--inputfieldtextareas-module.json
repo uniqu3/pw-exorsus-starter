@@ -1,0 +1,9 @@
+{
+    "file": "site\/modules\/FieldtypeTextareas\/InputfieldTextareas.module",
+    "textdomain": "site--modules--fieldtypetextareas--inputfieldtextareas-module",
+    "translations": {
+        "c7c8a1f62d01a482d61bfc687bd051bd": {
+            "text": "Hier ist ein Wert erforderlich"
+        }
+    }
+}

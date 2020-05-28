@@ -1,0 +1,131 @@
+// --- MAIN PAGE SECTIONS ---//
+.section {
+    padding-top: @spacing-lg;
+    padding-bottom: @spacing-lg;
+}
+
+
+// Main Layout Sections
+.section {
+
+    &--header {
+
+        .brand {
+            // Branding section Logo/Call to action
+            &--quick-contact {
+                text-align: left;
+                .mq-min(@size-sm, {
+                    margin: 0;
+                    text-align: left;
+                });
+
+                & > li:not(:last-child) {
+                    margin-bottom: 4px;
+                }
+
+                & > li {
+                    &:hover {
+                        &>.icon {
+                            transform: scale(1.1);
+                        }
+                    }
+                }
+
+                .icon {
+                    transition: transform 250ms ease-in-out;
+                    width: @text[medium];
+                    color: @color-primary;
+                    font-size: @text[medium] * 1.5;
+                }
+
+                & a {
+                    text-decoration: none;
+                    color: lighten(@color-default, 25%);
+                }
+            }
+        }
+
+    }
+    // Metabar with social icons & search input
+    &--meta {
+        border-bottom: @metabar-border;
+        background-color: @metabar-background;
+        color: @metabar-text-color;
+    }
+    // Navigation bar
+    &--navigation {
+        position: relative;
+        z-index: 200;
+        box-shadow: 0 4px 6px fade(@color-dark, 5%);
+    }
+
+    &--main {
+
+    }
+
+    &--main-content {
+
+    }
+
+    &--footer {
+        background-color: @footer-background-color;
+        color: @footer-text-color;
+
+        & .columns {
+
+            & > .column:not(:last-child) {
+                margin-bottom: 1rem;
+                .mq-min(@size-md, {
+                    margin-bottom: 0;
+                });
+            }
+        }
+
+        & .site--copyright {
+            color: lighten(@footer-background-color,40%);
+            & a {
+                color: lighten(@footer-background-color, 40%);
+                text-decoration: none;
+            }
+
+            .mq-min(@size-sm, {
+                text-align: right;
+            });
+        }
+
+        & .model--address {
+            color: currentColor;
+            font-size: 1.4rem;
+
+            & a {
+                color: currentColor;
+                text-decoration: none;
+            }
+        }
+
+        & .model--social-icons {
+            color: currentColor;
+            font-size: 2rem;
+            .mq-min(@size-md, {
+                text-align: right;
+            });
+
+            & a {
+                color: currentColor;
+            }
+        }
+    }
+}
+
+// Plugin Sections
+.section--map {
+    padding: 0;
+
+    & .map {
+        height: 350px;
+        .mq-min(@size-md, {
+            height: 500px;
+        });
+
+    }
+}

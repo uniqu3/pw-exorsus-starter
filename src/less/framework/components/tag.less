@@ -1,0 +1,132 @@
+/**
+ * @package exors.us
+ * @component tag.less
+ * @description Small label elements usually used for tags or attention
+ */
+
+// Variables
+// ========================================================================
+
+@tag-default: @color-default;
+@tag-light: @color-lighter;
+@tag-primary: @color-primary;
+@tag-secondary: @color-secondary;
+@tag-error: @error;
+@tag-danger: @danger;
+@tag-warning: @warning;
+@tag-success: @success;
+@tag-notice: @notice;
+@tag-highlight: @highlight;
+
+@tag-radius: @radius;
+
+
+@tag-variations: {
+    default: @tag-default;
+    light: @tag-light;
+    primary: @tag-primary;
+    secondary: @tag-secondary;
+    error: @tag-error;
+    danger: @tag-danger;
+    warning: @tag-warning;
+    success: @tag-success;
+    notice: @tag-notice;
+    highlight: @tag-highlight;
+}
+
+// Mixins
+// ========================================================================
+.make-tag-colors(@colors: @tag-variations) {
+
+    each(@colors, {
+        &.is-@{key} {
+            background-color: @value;
+
+            & when (luma(@value) >=65%) {
+                color: @color-dark;
+            }
+
+            & when (luma(@value) < 65%) {
+                color: @color-light;
+            }
+        }
+    });
+};
+
+// Component
+// ========================================================================
+.tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: @tag-radius;
+    background-color: @tag-default;
+    padding-right: @spacing-md;
+    padding-left: @spacing-md;
+    height: 1.8em;
+    white-space: nowrap;
+    color: @color-light;
+    font-size: @text[small];
+
+    // tag sizes
+    &.is-medium {
+        &:extend(.tag);
+    }
+
+    &.is-small {
+        padding-right: @spacing-md;
+        padding-left: @spacing-md;
+        font-size: @text[xsmall];
+    }
+
+    &.is-large {
+        padding-right: @spacing-lg;
+        padding-left: @spacing-lg;
+        font-size: @text[xlarge];
+    }
+
+    // clear button
+    & .btn-clear {
+        margin-right: -@spacing-xs;
+        margin-left: @spacing-sm;
+    }
+
+    // color variations
+    .make-tag-colors;
+}
+
+// Grouping tags
+// @depends utilities/group.less
+.is-group {
+
+    & .tag {
+
+        &:first-child:not(:last-child) {
+            margin-right: 0;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        &:not(:first-child):not(:last-child) {
+            margin-right: 0;
+            border-radius: 0;
+        }
+
+        &:last-child:not(:first-child) {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+    }
+}
+
+// Tags group
+.has-group {
+
+    & .tag {
+        margin-bottom: @spacing-sm;
+
+        &:not(:last-child) {
+            margin-right: @spacing-sm;
+        }
+    }
+}

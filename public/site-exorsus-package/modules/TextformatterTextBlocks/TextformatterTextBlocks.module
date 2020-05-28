@@ -1,0 +1,486 @@
+<?php namespace ProcessWire;
+
+/**
+ * ProcessWire ProFields: Text Blocks Textformatter
+ *
+ * Copyright (C) 2017 by Ryan Cramer 
+ * This is a commercially licensed and supported module, do not distribute.
+ * https://processwire.com/blog/posts/text-blocks/
+ * 
+ * @property string $blockStart
+ * @property string $blockStop
+ * @property string $blockShow
+ * @property string $blockSplit
+ *
+ */
+
+class TextformatterTextBlocks extends Textformatter implements ConfigurableModule {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => __('ProFields: Text Blocks', __FILE__), 
+			'version' => 2, 
+			'summary' => __('Define blocks in textarea fields and pull them into other textarea fields or via API calls.', __FILE__),
+			'author' => 'Ryan Cramer',
+			'requires' => 'ProcessWire>=2.8.0',
+			'autoload' => "template=admin", 
+			'href' => "https://processwire.com/blog/posts/text-blocks/",
+			); 
+	}
+
+	/**
+	 * True when there is an active getBlock() call occurring, signal to formatValue()
+	 * 
+	 * @var bool
+	 * 
+	 */
+	protected $getBlockMode = false;
+	
+	/**
+	 * Set our configuration defaults
+	 *
+	 */
+	public function __construct() {
+		$this->set('blockStart', 'start'); 
+		$this->set('blockStop', 'stop');
+		$this->set('blockShow', 'show');
+		$this->set('blockSet', 'set');
+		$this->set('blockSplit', '_'); // separates above tags from block name in block tag, must be fulltext indexable with block tag
+		parent::__construct();
+	}
+
+	/**
+	 * API ready event
+	 * 
+	 * #pw-internal
+	 * 
+	 */
+	public function ready() {
+		$this->wire('pages')->addHookBefore('FieldtypeTextarea::savePageField', $this, 'hookBeforeSaveTextarea');
+	}
+
+	/**
+	 * Hook before FieldtypeTextarea::savePageField to validate that defined blocks are unique
+	 * 
+	 * #pw-internal
+	 * 
+	 * @param HookEvent $event
+	 * 
+	 */
+	public function hookBeforeSaveTextarea(HookEvent $event) {
+		
+		$page = $event->arguments(0);
+		$field = $event->arguments(1);
+		
+		if(!$page->isChanged($field->name)) return;
+		
+		$fieldNames = $this->getBlockFieldNames();
+		if(!in_array($field->name, $fieldNames)) return;
+		$fieldName = implode('|', $fieldNames);
+		
+		/** @var Languages $languages */
+		$languages = $this->wire('languages');
+		$value = $page->getUnformatted($field->name);
+		$changed = false;
+		
+		if(is_object($value) && $languages && $value instanceof LanguagesValueInterface) {
+			/** @var LanguagesValueInterface $value */
+			foreach($languages as $language) {
+				$v = $value->getLanguageValue($language->id);
+				if($this->validateBlocksInString($page, $fieldName, $v)) {
+					$changed = true;
+					$value->setLanguageValue($language->id, $v);
+				}
+			}
+		} else {
+			$changed = $this->validateBlocksInString($page, $fieldName, $value);
+		}
+		
+		if($changed) {
+			$page->set($field->name, $value);
+		}
+	}
+
+	/**
+	 * Validate that blocks defined here are unique
+	 * 
+	 * Blocks that are not unique will be converted to multi-blocks
+	 * 
+	 * @param Page $page
+	 * @param string $fieldName Contains field name string or field1|field2|field3, etc. 
+	 * @param string $value
+	 * @return bool True if something was modified, false if not
+	 * 
+	 */
+	protected function validateBlocksInString(Page $page, $fieldName, &$value) {
+		
+		$blocks = $this->getBlocksInString($value, false);
+		if(empty($blocks)) return false;
+
+		$sanitizer = $this->wire('sanitizer');
+		$pages = $this->wire('pages');
+		$start = $this->get('blockStart');
+		$stop = $this->get('blockStop');
+		$_ = $this->get('blockSplit');
+		$changed = false;
+
+		foreach($blocks as $blockName => $blockText) {
+
+			$blockStart = $start . $_ . $blockName;
+			$blockStartMulti = $start . $_ . $_ . $blockName;
+
+			$q = $sanitizer->selectorValue($blockStart);
+			$selector = "$fieldName~=$q, id!=$page->id, include=all";
+			if(!$pages->count($selector)) continue; // block is unique
+
+			// singular block "start_name" already defined, convert to multi block "start__name"
+
+			$regex = '!' .
+				'([>\s\r\n]|^)' .
+				'(' . $start . $_ . '|' . $stop . $_ . ')' . preg_quote($blockName) .
+				'([<\s\r\n]|$)' .
+				'!i';
+
+			$value = preg_replace($regex, '$1$2' . $_ . $blockName . '$3', $value); // add extra '_'
+			$warning = sprintf(
+				$this->_('Block "%1$s" already exists on another page, so it was converted to multi-value block "%2$s".'),
+				$blockStart, $blockStartMulti
+			);
+			$this->warning($warning);
+			$this->log($warning);
+			$changed = true;
+		}
+		
+		return $changed;
+	}
+	
+	/**
+	 * Format the given text string with Page and Field provided.
+	 *
+	 * #pw-internal
+	 *
+	 * @param Page $page
+	 * @param Field $field
+	 * @param string|mixed $value Value is provided as a reference, so is modified directly (not returned).
+	 *
+	 */
+	public function formatValue(Page $page, Field $field, &$value) {
+		
+		static $level = 0;
+		if($level > 0) return; // prevent recursion
+		$level++;
+		
+		$_ = $this->get('blockSplit');
+		
+		if(!$this->getBlockMode && stripos($value, $this->blockStart . $_) !== false) {
+			// remove block identifiers
+			$this->getBlocksInString($value);
+		}
+		
+		if(stripos($value, $this->blockShow . $_) !== false) {
+			$this->populateBlocks($value);
+			$this->stripComments($value);
+		}
+		
+		$level--;
+	}
+
+	/**
+	 * Populate/show blocks into the given string, converting block tags to block text
+	 * 
+	 * @param $str String containing "show_block" tags (which will be replaced)
+	 * 
+	 */
+	protected function populateBlocks(&$str) {
+		
+		$blockShow = preg_quote($this->get('blockShow'));
+		$_ = $this->get('blockSplit');
+		$__ = $_ . $_;
+		
+		$regex = '!' .
+			'(?:<[a-z0-9]>\s*|[\s\r\n]+|^)' .   // <p> or space or newline
+			$blockShow . "($__?)" .             // 1. show_blockName or show__blockName with "_" or "__" as #1
+			'([_a-z0-9\w]+)' .                  // 2. block name
+			'(?:\s*<[a-z0-9/]+>|[\s\r\n]+)' .   // </p> or space or newline
+			'!i';
+		
+		if(!preg_match_all($regex, $str, $matches)) return;
+		
+		foreach($matches[0] as $key => $fullMatch) {
+			$multi = $matches[1][$key] === $__;
+			$name = $matches[2][$key];
+			$options = array(
+				'multi' => $multi
+			);
+			$replacement = $this->getBlock($name, $options);
+			$str = str_replace($fullMatch, $replacement, $str);
+		}
+	}
+
+	/**
+	 * Strips HTML comments from string (whether entity encoded or not)
+	 * 
+	 * @param $str
+	 * 
+	 */
+	protected function stripComments(&$str) {
+		if(strpos($str, "&lt;!-") !== false) {
+			$str = str_replace(array("&lt;!--", "--&gt;"), array("<!--", "-->"), $str);
+		}
+		if(strpos($str, "<!--") !== false) {
+			$str = preg_replace('/<!--.*?-->/s', '', $str);
+		}
+	}
+	
+	/**
+	 * Return array of defined blocks in given string, optionally removing those block tags from it
+	 * 
+	 * Return value is associative array indexed by block name. Note that in this return value, 
+	 * multi-value block names (array indexes) have an "_" appended to the name (index). 
+	 * 
+	 * @param string $str String containing blocks
+	 * @param bool $removeBlocks Specify false to skip removal of blocks from the text
+	 * @return array Indexed by block name
+	 * 
+	 */
+	public function getBlocksInString(&$str, $removeBlocks = true) {
+		
+		$blocks = array();
+		$_ = $this->get('blockSplit');
+		$start = $this->get('blockStart') . $_;
+		$stop = $this->get('blockStop') . $_;
+
+		if(stripos($str, $start) === false) return $blocks; 
+
+		$tagex = '<[-_\s/="a-z0-9]+>';
+		$regex = '!' . 
+			'(?:' . $tagex . '\s*|\n|^)' .      // <p> or space or newline
+			preg_quote($start) . $_ . '?' .     // start_blockName or start__blockName
+			'([-_a-z0-9\w]+)' .                 // 1. block name
+			'(?:\s*' . $tagex .'|[\s\r\n]+)' .  // </p> or newline
+			'(.*?)' .                           // 2. block content	
+			preg_quote($stop) . $_ . '?\\1' .   // stop_blockName or stop__blockName
+			'(?:\s*' . $tagex . '\s*| *\n|$)' . // </p> or newline
+			'!is';
+		
+		if(!preg_match_all($regex, $str, $matches)) {
+			return $blocks; // empty array
+		}
+		
+		foreach($matches[0] as $key => $fullMatch) {
+			$name = $matches[1][$key];
+			$text = $matches[2][$key];
+			$multi = stripos($fullMatch, $start . $_ . $name) !== false;
+			if($multi) $name .= $_;
+			if(isset($blocks[$name])) {
+				$blocks[$name] .= "\n$text";
+			} else {
+				$blocks[$name] = $text;
+			}
+			if($removeBlocks) {
+				$str = str_replace($fullMatch, $text, $str);
+			}
+		}
+	
+		return $blocks;
+	}
+
+	/**
+	 * Get an array of all Textarea field names that are using this Textformatter
+	 * 
+	 * @return array
+	 * 
+	 */
+	public function getBlockFieldNames() {
+		
+		static $fieldNames = null;
+		if(is_array($fieldNames)) return $fieldNames;
+		$fieldNames = array();
+		
+		foreach($this->wire('fields') as $field) {
+			if(!$field->type instanceof FieldtypeTextarea) continue;
+			$textformatters = $field->get('textformatters');
+			if(!is_array($textformatters) || empty($textformatters)) continue;
+			if(!in_array($this->className(), $textformatters)) continue;
+			$fieldNames[] = $field->name;
+		}
+		
+		return $fieldNames;
+	}
+
+	/**
+	 * Get the contents of a single block
+	 * 
+	 * @param string $blockName Name of block
+	 * @param array|bool|string $options Optionally specify any of the following options in associative array:
+	 * - `multi` (bool): Get a multi-block? (default=false)
+	 * - `fieldName` (string): Name of field where it's preset (default=any field)
+	 * - `getArray` (bool): Specify true to get an array instead (default=false)
+	 * - If you instead provide a boolean for $options the getArray option is assumed. 
+	 * - If you instead provide a string for $options the fieldName option is assumed. 
+	 * @return string|array
+	 * 
+	 */
+	public function getBlock($blockName, $options = array()) {
+		
+		$defaults = array(
+			'multi' => false,
+			'fieldName' => '', 
+			'getArray' => false, 
+		);
+		
+		if($options === true) {
+			$options = $defaults;
+			$options['getArray'] = true;
+		} else if(is_string($options)) {
+			$fieldName = $options;
+			$options = $defaults;
+			$options['fieldName'] = $fieldName;
+		} else if(!is_array($options)) {
+			$options = array();
+		}
+		
+		$options = array_merge($defaults, $options);
+		$fieldName = $this->wire('sanitizer')->fieldName($options['fieldName']);
+		
+		if(!$fieldName) {
+			$fieldNames = $this->getBlockFieldNames();
+			if(empty($fieldNames)) return '';
+			$fieldName = implode('|', $fieldNames);
+		} else {
+			$fieldNames = array($fieldName);
+		}
+
+		$_ = $this->get('blockSplit');
+		$blockStart = $this->get('blockStart') . ($options['multi'] ? "$_$_" : $_);
+		$blockName = $this->wire('sanitizer')->name($blockName);
+		$blockTag = $blockStart . $blockName;
+		$selector = "$fieldName~='$blockTag', include=all";
+		$items = $this->wire('pages')->find($selector);
+		$block = array();
+
+		foreach($items as $item) {
+			if(!$item->viewable(false)) continue;
+			foreach($fieldNames as $fieldName) {
+				$this->getBlockMode = true; 
+				$val = $item->get($fieldName);
+				$this->getBlockMode = false;
+				if(stripos($val, $blockTag) === false) continue;
+				$blocks = $this->getBlocksInString($val, false);
+				if($options['multi']) {
+					if(isset($blocks[$blockName . $_])) {
+						$block[] = $blocks[$blockName . $_];
+					}
+				} else if(isset($blocks[$blockName])) {
+					$block[] = $blocks[$blockName];
+					break;
+				}
+			}
+			if(count($block) && !$options['multi']) break;
+		}
+		
+		if(!$options['getArray']) $block = implode("\n", $block);
+		
+		if(empty($block) && $this->wire('languages') && !$this->wire('user')->language->isDefault()) {
+			// if nothing found, try again with default language as a fallback
+			$this->wire('languages')->setDefault();
+			$block = $this->getBlock($blockName, $options);
+			$this->wire('languages')->unsetDefault();
+		}
+	
+		// optionally pass into block template file, if available
+		$blockFile = $this->wire('config')->paths->templates . "text-blocks/$blockName.php";
+		if(file_exists($blockFile)) {
+			$block = $this->wire('files')->render($blockFile, array(
+				'value' => $block
+			));
+		}
+		
+		return $block;
+	}
+
+	/**
+	 * Get the contents of a multi-value block (block with multiple definitions)
+	 * 
+	 * By default it returns a concatenated string containing all the blocks with the given name.
+	 * If you want to have it return an array with the blocks isolated in each element, specify
+	 * boolean true as the 2nd argument. 
+	 *
+	 * @param string $blockName Name of block
+	 * @param array|bool $options See $options for getBlock(),
+	 *   OR specify boolean TRUE to have this method return an array rather than string. 
+	 * @return array|string
+	 *
+	 */
+	public function getMultiBlock($blockName, $options = array()) {
+		
+		if($options === true) {
+			// implied getArray with boolean true argument
+			$options = array('getArray' => true);
+		} else if(!is_array($options)) {
+			$options = array();
+		}
+		
+		$options['multi'] = true;
+		
+		return $this->getBlock($blockName, $options);
+	}
+
+	/**
+	 * Uninstall
+	 * 
+	 * @throws WireException
+	 * 
+	 */
+	public function ___uninstall() {
+		$fieldNames = $this->getBlockFieldNames();
+		if(!empty($fieldNames)) {
+			throw new WireException("Fields are still using this Textformatter: " . implode(', ', $fieldNames));
+		}
+	}
+
+	/**
+	 * Module configuration screen
+	 * 
+	 * @param InputfieldWrapper $inputfields
+	 * @return InputfieldWrapper
+	 *
+	 */
+	public function getModuleConfigInputfields(InputfieldWrapper $inputfields) {
+	
+		/** @var InputfieldFieldset $fieldset */
+		$fieldset = $this->wire('modules')->get('InputfieldFieldset');
+		$fieldset->label = $this->_('Block prefixes');
+		$fieldset->description = $this->_('Defines the words that start, stop, show blocks.') . ' ' . 
+			$this->_('When used in a textarea field, you append “_” and a block name to the prefix, i.e. “start_address”.') . ' ' . 
+			$this->_('Please use only alphanumeric characters for block words.') . ' ' . 
+			$this->_('Avoid changes to these after you have already started using text blocks.');
+		$inputfields->add($fieldset);
+		
+		/** @var InputfieldText $f */
+		$f = $this->wire('modules')->get('InputfieldText');
+		$f->attr('name', 'blockStart'); 
+		$f->label = $this->_('Block start word');
+		$f->description = $this->_('Word that identifies the beginning of a block.');
+		$f->attr('value', $this->blockStart);
+		$fieldset->add($f);
+		
+		/** @var InputfieldText $f */
+		$f = $this->wire('modules')->get('InputfieldText');
+		$f->attr('name', 'blockStop');
+		$f->label = $this->_('Block stop word');
+		$f->description = $this->_('Word that defines the ending of a block');
+		$f->attr('value', $this->blockStop);
+		$fieldset->add($f);
+		
+		/** @var InputfieldText $f */
+		$f = $this->wire('modules')->get('InputfieldText');
+		$f->attr('name', 'blockShow');
+		$f->label = $this->_('Block show word');
+		$f->description = $this->_('Word used to show a defined block');
+		$f->attr('value', $this->blockShow);
+		$fieldset->add($f);
+		
+		return $inputfields; 		
+	}
+}

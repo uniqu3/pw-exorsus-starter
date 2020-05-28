@@ -1,0 +1,86 @@
+.model--address {
+        
+    &__name {
+        margin-top: 0;
+        font-size: 2rem;
+    }
+}
+
+.model--person {
+
+    &__image {
+        margin: 10%;
+        overflow: hidden;
+    }
+
+    &__heading {
+        border-bottom: 1px solid @border-color;
+        padding: 0 0 1.5rem 0;
+    }
+
+    &__title {
+        margin-bottom: 0;
+        font-size: 1.8rem;
+    }
+
+    &__position {
+        margin: 0;
+        text-transform: uppercase;
+        color: @color-lighten-dark;
+        font-size: 1.3rem;
+        font-weight: 400;
+    }
+
+    &__contact {
+        padding-top: 1.5rem;
+        font-size: 1.4rem;
+
+        & a {
+            text-decoration: none;
+            color: currentColor;
+        }
+
+        & .icon {
+            color: @color-primary;
+        }
+    }
+}
+
+.model--article {
+
+    &__headline {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+
+        & h2 {
+            font-size: 2rem;
+        }
+
+        & h3 {
+            text-transform: uppercase;
+            color: @color-lighten-dark;
+            font-size: 1.4rem;
+            font-weight: 400;
+        }
+    }
+
+    &__block {
+
+        & .model--article__headline {
+            padding-top: 0 !important;
+
+            & h2 {
+                font-size: 2.4rem;
+            }
+
+            & h3 {
+                font-size: 1.8rem;
+            }
+        }
+    }
+
+    &__date {
+        margin-bottom: -1rem !important;
+        color: @color-gray;
+    }
+}

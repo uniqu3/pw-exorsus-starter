@@ -1,0 +1,18 @@
+{
+    "file": "site\/modules\/PageTableExtraActions\/PageTableExtraActions.module",
+    "textdomain": "site--modules--pagetableextraactions--pagetableextraactions-module",
+    "translations": {
+        "a29bdd003ef6c0c34279807341f450f2": {
+            "text": "Ver\u00f6ffentlichen"
+        },
+        "f40271af9378ba3b92b006eb2f2441bb": {
+            "text": "Nicht ver\u00f6ffentlichen"
+        },
+        "c41263e9868393a11717a8fd89de95f8": {
+            "text": "Nicht verstecken"
+        },
+        "62a5e490880a92eef74f167d9dc6dca0": {
+            "text": "Verstecken"
+        }
+    }
+}

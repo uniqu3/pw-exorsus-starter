@@ -1,0 +1,15 @@
+{
+    "file": "site\/modules\/ContinentsAndCountries\/lib\/ContinentsAndCountriesTranslation.php",
+    "textdomain": "site--modules--continentsandcountries--lib--continentsandcountriestranslation-php",
+    "translations": {
+        "9891739094756d2605946c867b32ad28": {
+            "text": "\u00d6sterreich"
+        },
+        "d8b00929dec65d422303256336ada04f": {
+            "text": "Deutschland"
+        },
+        "3ad08396dc5afa78f34f548eea3c1d64": {
+            "text": "Schweiz"
+        }
+    }
+}

@@ -1,0 +1,104 @@
+/**
+ * @package exors.us
+ * @component card.less
+ * @description A flexible content container with different elements to mix and match
+ */
+
+// Variables
+// ========================================================================
+@card-background: @color-light;
+@card-border-radius: @radius;
+@card-border-width: @border-width;
+@card-border-color: @border-color;
+@card-spacing: @spacing-md @spacing-lg;
+
+// Component
+// ========================================================================
+
+.card {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    max-width: 100%;
+    background-color: @card-background;
+    border-radius: @card-border-radius;
+
+    &.has-border {
+        border: @card-border-width solid @card-border-color;
+    }
+
+    &-media {
+        display: block;
+        position: relative;
+        overflow: hidden;
+
+        &:first-child {
+
+            & img {
+                border-top-left-radius: @card-border-radius;
+                border-top-right-radius: @card-border-radius;
+            }
+        }
+
+        &:last-child {
+
+            & img {
+                border-bottom-left-radius: @card-border-radius;
+                border-bottom-right-radius: @card-border-radius;
+            }
+        }
+    }
+
+    &-header,
+    &-content,
+    &-footer,
+    &-meta {
+
+        &:not(.has-items) {
+            padding: @card-spacing;
+        }
+
+        & :first-child {
+            margin-top: 0;
+        }
+
+        & :last-child {
+            margin-bottom: 0;
+        }
+
+        &.has-border:not(:last-child) {
+            border-bottom: @border-width solid @border-color;
+        }
+
+        &:not(.has-border) + .has-border:last-child {
+            border-top: @border-width solid @border-color;
+        }
+
+        &.has-items {
+            display: flex;
+            align-items: stretch;
+        }
+    }
+
+    &-meta {
+        font-size: @text[small];
+    }
+
+    &-content {
+        flex: 1 1 auto;
+    }
+
+    &-item {
+        align-items: center;
+        display: flex;
+        flex-basis: 0;
+        flex-grow: 1;
+        flex-shrink: 0;
+        justify-content: center;
+        padding: @spacing-md;
+
+        &:not(:last-child) {
+            border-right: @border-width solid @border-color;
+        }
+    }
+}

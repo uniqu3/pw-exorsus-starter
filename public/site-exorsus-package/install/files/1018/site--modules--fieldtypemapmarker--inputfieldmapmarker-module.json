@@ -1,0 +1,24 @@
+{
+    "file": "site\/modules\/FieldtypeMapMarker\/InputfieldMapMarker.module",
+    "textdomain": "site--modules--fieldtypemapmarker--inputfieldmapmarker-module",
+    "translations": {
+        "dd7bf230fde8d4836917806aff6a6b27": {
+            "text": "Adresse"
+        },
+        "3b0eb7469ba9c95f3a05c4cef1f6aac4": {
+            "text": "L\u00e4ngengrad"
+        },
+        "9b4dabc50f0b8ccba1c8981831abdad8": {
+            "text": "Breitengrad"
+        },
+        "b333c623973eb4e9a60f40b2837a756e": {
+            "text": "Geokodieren?"
+        },
+        "4252b72e6ebcd4d4b4c2e46a786f03d2": {
+            "text": "Zoomen"
+        },
+        "3f84f2b44d5dfbb94a4ab73cafd77fdd": {
+            "text": "Standard Adresse"
+        }
+    }
+}

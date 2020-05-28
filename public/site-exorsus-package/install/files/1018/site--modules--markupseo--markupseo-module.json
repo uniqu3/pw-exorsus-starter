@@ -1,0 +1,51 @@
+{
+    "file": "site\/modules\/MarkupSEO\/MarkupSEO.module",
+    "textdomain": "site--modules--markupseo--markupseo-module",
+    "translations": {
+        "a861d8a3d6aef574c134e7f346f8040f": {
+            "text": "Google Vorschau"
+        },
+        "0211c8f752081cfb67681beef0ade861": {
+            "text": "Aktualisiert, w\u00e4hrend Sie einen Titel oder eine Beschreibung eingeben."
+        },
+        "c826ef451257bcf894c86984ec37cc7d": {
+            "text": "Schlie\u00dfe ein offenes Feldset"
+        },
+        "b78a3223503896721cca1303f776159b": {
+            "text": "Titel"
+        },
+        "bc179f7bc72ca0bbc245f35eb0d5311d": {
+            "text": "Eine gute l\u00e4nge f\u00fcr den Titel sind 60 Zeichen."
+        },
+        "867343577fa1f33caa632a19543bd252": {
+            "text": "Schlagw\u00f6rter"
+        },
+        "59b3dbbd9332a5fbd8e68ddab075289a": {
+            "text": "Eine gute l\u00e4nge f\u00fcr die Beschreibung sind 160 Zeichen."
+        },
+        "be53a0541a6d36f6ecb879fa2c584b08": {
+            "text": "Bild"
+        },
+        "7e13a6d24a41b5421752a5bb7b5b3313": {
+            "text": "Bitte geben Sie die URL (inklusive \"http:\/\/...\") zum Vorschau-Bild ein."
+        },
+        "7cc0feec8680b02473a5f31ad7ee4ff4": {
+            "text": "Kannonisches Link"
+        },
+        "1c4c78cdd287d5753cbadb81dec8acf9": {
+            "text": "Die URL sollte \"http:\/\/...\" enthalten."
+        },
+        "90589c47f06eb971d548591f23c285af": {
+            "text": "Benutzerdefiniert"
+        },
+        "9d452988ae6c781ca5801252e83e20a7": {
+            "text": "Wenn Sie weitere Meta-Tags hinzuf\u00fcgen m\u00f6chten, k\u00f6nnen Sie dies hier tun."
+        },
+        "828f7421207abbf5687a787218b647ef": {
+            "text": "Bitte verwenden Sie dieses Schema: name: = content. Ein Tag pro Zeile. Sonderzeichen sind nur im Inhaltsteil zul\u00e4ssig und werden in HTML konvertiert."
+        },
+        "b24ea0398f423077ce7fafe89bb79169": {
+            "text": "Zeichen verwendet"
+        }
+    }
+}

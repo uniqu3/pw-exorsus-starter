@@ -1,0 +1,201 @@
+.navigation--trigger {
+    margin: 0;
+    padding: 1em;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 500;
+    background-color: fade(@nav-main-background,92%);
+}
+
+.nav-main {
+    background-color: @nav-main-background;
+
+    .mq-max(@size-md, {
+        display: block;
+        position: fixed;
+        top: 0;
+        right: -100%;
+        bottom: 0;
+        padding-top: 5rem;
+        width: 80%;
+        height: 100%;
+        overflow-y: auto;
+        .transition.easeInOutCubic(all, 500ms, 100ms);
+        &.is-open {
+            right: 0;
+            box-shadow: -6px 0px 11px rgba(0,0,0,0.1);
+        }
+    });
+
+    & .menu-item {
+        cursor: pointer;
+        position: relative;
+        z-index: 1;
+    }
+
+    & .parent {
+        .mq-max(@size-md, {
+            & > .menu-item:after {
+                content: '';
+                position: absolute;
+                right: 2rem;
+                top: 1.9rem;
+                display: inline-block;
+                width: 7px;
+                height: 7px;
+                border-top: 2px solid currentColor;
+                border-right: 2px solid currentColor;
+                transform: rotate(135deg);
+            }
+        });
+    }
+
+    & ul {
+        top: 100%;
+        left: 0;
+        transform: translateY(-2em);
+        transition: all 0.2s ease-in-out 0s, visibility 0s linear 0.2s, z-index 0s linear 0.01s;
+        visibility: hidden;
+        opacity: 0;
+        background-color: @nav-main-background;
+        .mq-min(@size-md, {
+            box-shadow: 0 6px 5px fade(@color-dark, 15%);
+        });
+
+        & ul {
+            top: 0;
+        }
+    }
+
+    & > li {
+        position: relative;
+
+        & > .menu-item {
+            display: block;
+            background-color: @nav-main-background;
+            padding: 1.4rem 1.7rem;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: @nav-primary;
+            font-size: 1.6rem;
+            font-weight: 500;
+            border-top: 1px solid lighten(@nav-primary,62%);
+            .mq-min(@size-md, {
+                border-top: none;
+            });
+        }
+
+        &:first-child > .menu-item {
+            border-top: none;
+        }
+
+        &:hover,
+        &.selected,
+        &.current {
+            & > .menu-item {
+                color: @nav-active;
+            }
+        }
+
+        & > ul > li,
+        & > ul > li > ul > li {
+            
+            position: relative;
+
+            & > .menu-item {
+                display: block;
+                background-color: @nav-main-background;
+                padding: 1.2rem 1.7rem;
+                text-decoration: none;
+                color: @nav-primary;
+                font-size: 1.4rem;
+                font-weight: 400;
+            }
+
+            &:hover,
+            &.current {
+
+                & > .menu-item {
+                    color: @nav-active;
+                }
+            }
+        }
+
+        & > ul > li > ul > li {
+
+            & .menu-item {
+                background-color: lighten(@nav-primary,62%);
+            }
+        }
+
+        & > ul,
+        & > ul > li > ul {
+            position: absolute;
+            z-index: -1;
+            .mq-min(@size-md, {
+                width: 270px;
+            });
+        }
+
+        & > ul > li > ul {
+            transform: translateY(0);
+        }
+
+        &:last-child ul {
+            left: auto;
+            right: 0;
+        }
+
+        &.selected > ul,
+        &:hover > ul,
+        & > ul > .selected > ul,
+        & > ul > :hover > ul {
+            position: static;
+            .mq-min(@size-md, {
+                position: absolute;
+            });
+            transform: translateY(0%);
+            transition-delay: 0s, 0s, 0.3s;
+            visibility: visible;
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .mq-min(@size-md, {
+            & > ul > .selected > ul,
+            & > ul > :hover > ul {
+                top: 0;
+                left: 100%;
+            }
+            &:last-child ul {
+                left: auto;
+                right: 0;
+            }
+        });
+    }
+}
+
+.nav-footer {
+
+    & > li {
+
+        & > a,
+        & > span {
+            display: block;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: currentColor;
+            font-weight: 500;
+        }
+
+        &:hover {
+            & > a,
+            & > span {
+                color: @color-primary;
+            }
+        }
+    }
+}
+
+

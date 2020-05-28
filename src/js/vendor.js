@@ -1,0 +1,9 @@
+//import 'jquery';
+//import "core-js";
+import 'lodash.debounce';
+import 'history';
+import 'is_js';
+import 'aos';
+import 'swiper/js/swiper';
+import 'lightgallery.js';
+import 'lg-zoom.js';

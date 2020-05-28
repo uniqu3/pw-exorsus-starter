@@ -1,0 +1,11 @@
+BEGIN:VCARD
+VERSION:3.0
+REV:2019-12-12T14:57:49Z
+ORG;CHARSET=utf-8:Bluescreen IT GmbH
+TITLE;CHARSET=utf-8:Marketing Direktor
+EMAIL;INTERNET:m.mustermann@bluescreen.ch
+TEL;PREF;WORK:01 55 66 222
+TEL;CELL:01 52 62 223
+ADR;WORK;POSTAL;CHARSET=utf-8:;;Stansstaderstrasse 59;Stans;;6370;Schweiz
+URL:
+END:VCARD

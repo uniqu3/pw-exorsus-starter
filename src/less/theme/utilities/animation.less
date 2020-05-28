@@ -1,0 +1,120 @@
+.animation-hidden {
+    opacity: 0;
+}
+
+.animation-delay {
+
+    &-300 {
+        animation-delay: 300ms !important;
+    }
+
+    &-500 {
+        animation-delay: 500ms !important;
+    }
+}
+
+/**
+ * ----------------------------------------
+ * animation blur
+ * ----------------------------------------
+ */
+.blur {
+    filter: blur(3px);
+    transition: .4s ease-in-out;
+}
+
+.blur-hover {
+    transform-origin: center center;
+    transition: .3s ease-in-out;
+
+    .card:hover & {
+        transform: scale(1.05);
+        filter: blur(2px);
+    }
+}
+
+/**
+ * ----------------------------------------
+ * animation fade
+ * ----------------------------------------
+ */
+
+.fade {
+
+  &-in,
+  &-out {
+    transition: opacity 2s;
+  }
+
+  &-in {
+    opacity: 1;
+  }
+
+  &-out {
+    opacity: 0;
+  }
+}
+
+/**
+ * ----------------------------------------
+ * animation slide-in-left
+ * ----------------------------------------
+ */
+@-webkit-keyframes slide-in-left {
+  0% {
+    transform: translateX(-1000px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-1000px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-left {
+    animation: slide-in-left .7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+/**
+ * ----------------------------------------
+ * animation slide-in-bottom
+ * ----------------------------------------
+ */
+@-webkit-keyframes slide-in-bottom {
+  0% {
+
+    transform: translateY(1000px);
+    opacity: 0;
+  }
+  100% {
+
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-in-bottom {
+  0% {
+
+    transform: translateY(1000px);
+    opacity: 0;
+  }
+  100% {
+
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-bottom {
+    animation: slide-in-bottom .7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}

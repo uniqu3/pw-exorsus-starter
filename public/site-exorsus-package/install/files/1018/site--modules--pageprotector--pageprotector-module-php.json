@@ -1,0 +1,9 @@
+{
+    "file": "site\/modules\/PageProtector\/PageProtector.module.php",
+    "textdomain": "site--modules--pageprotector--pageprotector-module-php",
+    "translations": {
+        "03db30d7b14c0768b9a992436727cd9a": {
+            "text": "Login fehlgeschlagen, bitte versuchen Sie es erneut."
+        }
+    }
+}

@@ -1,0 +1,87 @@
+{
+    "file": "site\/templates\/_translations_contact_form.php",
+    "textdomain": "site--templates--_translations_contact_form-php",
+    "translations": {
+        "c69a98e13eae87bc0ca8735329bf3a5d": {
+            "text": "Anrede"
+        },
+        "6335a00a08fde0fbb8f6d6630cdadd92": {
+            "text": "Ihre Pers\u00f6nliche Informationen"
+        },
+        "992eda0d64a430fa5c7925d23ef9d0a3": {
+            "text": "Bitte ausw\u00e4hlen"
+        },
+        "7f2a1b59ac1ab6d2d892dbbf4f132c40": {
+            "text": "Frau"
+        },
+        "2c9b5b15a6d3cc951ca57c65e4966fd3": {
+            "text": "Herr"
+        },
+        "1c76cbfe21c6f44c1d1e59d54f3e4420": {
+            "text": "Firma"
+        },
+        "ac67ede5a84eb5a1add7ff4440e9a485": {
+            "text": "Pflichtfeld"
+        },
+        "04176f095283bc729f1e3926967e7034": {
+            "text": "Vorname"
+        },
+        "dff4bf10409100d989495c6d5486035e": {
+            "text": "Nachname"
+        },
+        "5e3d6d040d8a81befd75127d526646bc": {
+            "text": "Kontakt Information"
+        },
+        "d61ebdd8a0c0cd57c22455e9f0918c65": {
+            "text": "Stra\u00dfe"
+        },
+        "4348f938bbddd8475e967ccb47ecb234": {
+            "text": "PLZ"
+        },
+        "57d056ed0984166336b7879c2af3657f": {
+            "text": "Stadt"
+        },
+        "1f8261d17452a959e013666c5df45e07": {
+            "text": "Telefon"
+        },
+        "ce8ae9da5b7cd6c3df2929543a9af92d": {
+            "text": "E-Mail"
+        },
+        "2dfc9712033b56bb9f45a9f80f8266d9": {
+            "text": "Wie k\u00f6nnen wir Ihnen helfen?"
+        },
+        "4c2a8fe7eaf24721cc7a9f0175115bd4": {
+            "text": "Nachricht"
+        },
+        "cfe1b4b75fb8dc152b124f9305835a11": {
+            "text": "Ihre Nachricht"
+        },
+        "56c34c6410dd45c5cec44149ad0ce037": {
+            "text": "Datenschutzerkl\u00e4rung"
+        },
+        "3c4fd87d4eda7b35c67f3ae314219950": {
+            "text": "Ich bin damit einverstanden, dass meine personenbezogenen Daten im Rahmen der EU-Datenschutzgrundverordnung (DSGVO) zum Zwecke der Bearbeitung meiner Kontaktanfrage erhoben, gespeichert und genutzt werden."
+        },
+        "747c6a3564774149c989884e0c581d53": {
+            "text": "Nachricht absenden"
+        },
+        "dd3195ced9c1810388e28ca2b4eb921f": {
+            "text": "keine Angabe"
+        },
+        "8d3f5eff9c40ee315d452392bed5309b": {
+            "text": "Nachname"
+        },
+        "4e94c8ad46c8aef1ca637841dfbe2159": {
+            "text": "DSGVO"
+        },
+        "ab40cb3e2cc4fcf6b0287dc7d838b1ff": {
+            "text": "Bitte geben Sie f\u00fcr das Feld einen Wert ein"
+        },
+        "3f9a6385950d1fc5deaa8538873376e9": {
+            "text": "Bitte geben Sie einen Wert ein:"
+        },
+        "fc7f6a2c6147f5ea5e5d249c0c540119": {
+            "text": "Vielen dank f\u00fcr Ihre Anfrage. Wir melden uns in k\u00fcrze."
+        }
+    }
+}

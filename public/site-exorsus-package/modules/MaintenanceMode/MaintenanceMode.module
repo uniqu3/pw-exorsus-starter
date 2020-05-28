@@ -1,0 +1,181 @@
+<?php
+/** 
+* small refactoring fot php 7.2
+* see http://modules.processwire.com/modules/maintenance-mode/ for original code
+*/
+
+
+class MaintenanceMode extends WireData implements Module, ConfigurableModule {
+
+	/**
+	 * Basic information about module
+	 */
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Maintenance Mode',
+			'summary' => 'Allows you to put your site into maintenance mode so that users who are not logged in are taken to the login screen and a message is displayed accordingly.',
+			'href' => 'http://processwire.com/talk/index.php/topic,431.0.html',
+			'version' => 108,
+			'permanent' => false,
+			'autoload' => true,
+			'singular' => true,
+		);
+	}
+
+	/**
+	 * Default configuration for module
+	 *
+	 * This is based on Ryan's examples [used also in @apeisa's AdminBar, for instance]
+	 */
+	static public function getDefaultData() {
+		return array(
+			'inMaintenance' => 0,
+			'showPage' => 0,
+			'showURL' => '',
+			'bypassRoles' => '',
+			'allowPages' => 0
+		);
+	}
+
+	/**
+	 * Populate the default config data
+	 *
+	 */
+	public function __construct() {
+	   foreach(self::getDefaultData() as $key => $value) {
+		   $this->$key = $value;
+	   }
+	}
+
+	/**
+	 * Initialize the module and setup hooks
+	 */
+	public function init() {
+		// hook before the page has been loaded to see if we're in maintenance mode and redirect if neccessary
+		$this->addHookBefore('Page::render', $this, 'maintenanceCheck');
+		$this->addHookAfter('Page::render', $this, 'maintenanceMessage');
+	}
+	
+	public function getModuleConfigInputfields(array $data) {
+
+		// Populate $data with the default config, because if they've never configured this module before,
+		// the $data provided to this function will be empty. Or, if you add new config items in a new version,
+		// $data won't have it until they configure it. Best bet is to merge defaults with custom, where
+		// custom overwrites the defaults (array_merge).
+		
+		$data = array_merge(self::getDefaultData(), $data);
+    /** by abmcr **/
+		$wrapper = new InputfieldWrapper();
+		
+		/** checkbox */
+		$f = $this->wire('modules')->get("InputfieldCheckbox");
+		$f->name = 'inMaintenance';
+		$f->label = 'Put site into maintenance mode?';
+		$f->description ="Will redirect any visitors who are not logged in to your site to the login page with an appropriate message.";
+		$f->value = 1;
+		$f->attr('checked', $data['inMaintenance'] ? 'checked':'');
+		$wrapper->add($f);
+		
+		/** AsmSelect */
+		$f = $this->wire('modules')->get("InputfieldAsmSelect");
+    $f->name = 'bypassRoles';
+    $f->label = "Allow specific roles to bypass maintenance mode";
+    $f->description = "Optionally allow certain user roles eg. site editors/staff to see the side whilst in maintenance mode (superuser will always be allowed regardless of this setting)";
+    foreach($this->wire('roles') as $role) {
+        $f->addOption($role->id, $role->name);
+    }
+    $f->attr("value" , $data['bypassRoles']);
+    $f->columnWidth = '100';
+    if(empty($data['bypassRoles'])) $f->collapsed = Inputfield::collapsedYes;
+    $wrapper->append($f);
+
+    /** select */
+    $f = $this->wire('modules')->get("InputfieldPageListSelect");
+		$f->name = 'showPage';
+		$f->label = "Redirect to another page instead of the login page?";
+		$f->required = false;
+		$f->description = "Alternatively shows a specific page instead of the login page - for added security.";
+		$f->attr('value', $data['showPage']);
+		$f->set('unselectLabel', 'Unselect'); 
+		if( $data['showPage'] == 0) $f->collapsed = Inputfield::collapsedYes;
+		$wrapper->append($f);
+		
+		/** input field URL */
+		$f = $this->wire('modules')->get("InputfieldURL");
+		$f->name = 'showURL';
+		$f->label = "Redirect to another URL?";
+		$f->required = false;
+		$f->attr('value', $data['showURL']);
+		$f->description = "Allows you to send visitors who are not logged in to another URL including other sites.";
+		$f->notes = "Example: http://another.place.com/index.html";
+		if(!(int) ini_get('allow_url_fopen')) $field->error("Your PHP doesn't have 'allow_url_fopen' enabled, so the redirect to external URL option won't work.");
+		if( '' === $data['showURL'] ) $f->collapsed = Inputfield::collapsedYes;
+		$wrapper->append($f);
+		
+		/** InputfieldPageListSelectMultiple */
+		$f = $this->wire('modules')->get("InputfieldPageListSelectMultiple");
+		$f->name = 'allowPages';
+		$f->label = "Allowed Pages";
+		$f->required = false;
+		$f->description = "These pages will always be accessible in maintenance mode";
+		$f->attr('value', $data['allowPages']);
+		$f->set('unselectLabel', 'Unselect'); 
+		if($data['allowPages'] == 0) $f->collapsed = Inputfield::collapsedYes;
+    $wrapper->append($f);
+		/** end abmcr */
+		return $wrapper;
+	}
+
+	/**
+	 * Checks if we're in maintenance mode and performs any neccessary redirects
+	 *
+	 * @param HookEvent $event
+	 */
+	public function maintenanceCheck(HookEvent $event) {
+		$page = $event->object;
+		$user = $this->fuel('user');
+		// If we're in maintenance mode
+		if ($this->inMaintenance) {
+			// Check to make sure we're not a superuser and our role isn't in the list of allowed roles to access the site in maintenance mode
+			if (!$user->isSuperuser() && !array_intersect(explode('|', $user->roles), $this->bypassRoles)) {
+				$this->message("This site is currently in maintenance mode. If you are a site administrator, you may log in below and view the site as normal.");
+
+				// Redirect only if current page is not in array of allowed pages
+				if(!in_array($page->id,$this->allowPages)) {
+					
+					// If we have a different URL to redirect to then do a temp. redirect to that URL...
+					if( $this->showURL && ($page->name != 'login') ) {
+						$this->session->redirect($this->showURL, false);
+	
+					// If we have a specific page to redirect to then do it
+					} elseif ($this->showPage && ($page->id != $this->showPage) && ($page->name != 'login')) {
+						$this->session->redirect($this->fuel('pages')->get($this->showPage)->url, false);
+	
+					// Else redirect to the login page
+					} elseif (!$this->showPage && $page->name != 'login') {
+						$this->session->redirect($this->config->urls->admin, false);
+					}
+
+				}
+			}
+		// Else if we're not in maintenance mode and we're not an administrator, make sure the maintenance page redirects to the homepage
+		} elseif (!$this->inMaintenance && $this->showPage && ($page->id == $this->showPage) && !$user->isSuperuser()) {
+			$this->session->redirect($this->config->urls->root, false);
+		}
+	}
+
+	public function maintenanceMessage(HookEvent $event){ 
+		if ($this->inMaintenance) {
+			$user = $this->fuel('user');
+			if ($user->isLoggedin() && $user->isSuperuser()) {
+				$out = $event->return;
+				// Check to see if the edit link is visible (it is in the default template at least when viewing pages in the front-end). If so, move message to the right of it.
+				$indent = strpos($out, 'editpage') !== false ? '60px;' : '0';
+				$code = "<div style='font-family: Arial; font-size: 12px; padding: 5px 6px; line-height: 14px; margin-left: {$indent}; background-color: #87A71B; color: #fff; z-index:9999; position: fixed; text-align: center;'>Site is in maintenance mode</div>";
+				$out = preg_replace('/(<body[^>]*>)/i', '$1' . $code, $out); 
+				$event->return = $out;   
+			}
+		}
+	}
+
+}

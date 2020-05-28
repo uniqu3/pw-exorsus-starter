@@ -1,0 +1,912 @@
+// -------------------------------------------------------------------------
+// @section Yetti Mixins
+// @description Common mixins that can be used accross your project.
+//              Some of mixins were borrowed or adapted from following projects:
+// @link https://github.com/mdo/preboot
+//       https://github.com/invader365/anchorLESS
+// -------------------------------------------------------------------------
+
+//
+// prepend
+// Prepend a class or id to current item rules
+.prepend(@class, @rules) {
+
+    .@{class} & {
+        @rules();
+    }
+}
+
+//
+// align-*
+// Usage:
+//       .align.content(stretch|center|flex-start|flex-end|space-between|space-around|initial|inherit)
+//       .align.items(stretch|center|flex-start|flex-end|space-between|space-around|initial|inherit)
+//       .align.self(stretch|center|flex-start|flex-end|space-between|space-around|initial|inherit)
+//=================================================
+
+.align {
+
+    .content (@content: stretch) {
+        align-content: @content;
+    }
+
+    .items (@items: stretch) {
+        align-items: @items;
+    }
+
+    .self (@self: auto) {
+        align-self: @self;
+    }
+}
+
+// animation-*
+// Usage:
+//       .animation(name duration timing-function delay iteration-count direction fill-mode play-state)
+//       .animation.name(keyframename|none|initial|inherit)
+//       .animation.duration(time|initial|inherit)
+//       .animation.ease(linear|ease|ease-in|ease-out|cubic-bezier(n,n,n,n)|initial|inherit)
+//       .animation.delay(time|initial|inherit)
+//       .animation.iteration(number|infinite|initial|inherit)
+//       .animation.direction(normal|reverse|alternate|alternate-reverse|initial|inherit)
+//       .animation.fill-mode(none|forwards|backwards|both|initial|inherit)
+//       .animation.play-state(paused|running|initial|inherit)
+//=================================================
+
+.animation (@name: none, @duration: 0ms, @ease: ease, @delay: 0ms, @iteration: 1, @direction: normal) when not (@name =null) {
+    animation: @arguments;
+
+
+    .name (@name: none) {
+        animation-name: @name;
+    }
+
+    .duration (@duration: 0ms) when (isnumber(@duration)) {
+        animation-duration: @duration;
+    }
+
+    .ease (@ease: ease) {
+        animation-timing-function: @ease;
+    }
+
+    .delay (@delay: 0ms) when (isnumber(@delay)) {
+        animation-delay: @delay;
+    }
+
+    .iteration (@iteration: 1) {
+        animation-iteration-count: @iteration;
+    }
+
+    .direction (@direction: normal) {
+        animation-direction: @direction;
+    }
+
+    .fill-mode (@fill-mode: none) {
+        animation-fill-mode: @fill-mode;
+    }
+
+    .play-state (@play-state: running) {
+        animation-play-state: @play-state;
+    }
+}
+
+// backface-visibility
+// Usage:
+//       .backface(visible|hidden|initial|inherit)
+//=================================================
+
+.backface (@backface-visibility: visible) {
+    backface-visibility: @backface-visibility;
+}
+
+// background-clip
+// Usage:
+//       .bacground-clip(border-box|padding-box|content-box|initial|inherit)
+//=================================================
+//
+.background-clip (@clip: border-box) {
+    background-clip: @clip;
+}
+
+// background-size
+// Usage:
+//       .background-size(auto|length|cover|contain|initial|inherit)
+//=================================================
+
+.background-size (@background-size: auto) {
+    background-size: @background-size;
+}
+
+// border-radius-*
+// Usage:
+//       .rounded(1-4 length|% / 1-4 length|%|initial|inherit)
+//       .rounded.left-top(1-4 length|% / 1-4 length|%|initial|inherit)
+//       .rounded.left-bottom(1-4 length|% / 1-4 length|%|initial|inherit)
+//       .rounded.right-top(1-4 length|% / 1-4 length|%|initial|inherit)
+//       .rounded.right-bottom(1-4 length|% / 1-4 length|%|initial|inherit)
+//       .rounded.top(1-4 length|% / 1-4 length|%|initial|inherit)
+//       .rounded.right(1-4 length|% / 1-4 length|%|initial|inherit)
+//       .rounded.bottom(1-4 length|% / 1-4 length|%|initial|inherit)
+//       .rounded.left(1-4 length|% / 1-4 length|%|initial|inherit)
+//=================================================
+
+.rounded (@radius: 0) when (isnumber(@radius)) {
+    border-radius: @radius;
+}
+
+.rounded {
+
+    .left-top (@radius: 0) when (isnumber(@radius)) {
+        border-top-left-radius: @radius;
+    }
+
+    .left-bottom (@radius: 0) when (isnumber(@radius)) {
+        border-bottom-left-radius: @radius;
+    }
+
+    .right-top (@radius: 0) when (isnumber(@radius)) {
+        border-top-right-radius: @radius;
+    }
+
+    .right-bottom (@radius: 0) when (isnumber(@radius)) {
+        border-bottom-right-radius: @radius;
+    }
+
+    .top (@radius: 0) when (isnumber(@radius)) {
+        .rounded.left-top (@radius);
+        .rounded.right-top (@radius);
+    }
+
+    .right (@radius: 0) when (isnumber(@radius)) {
+        .rounded.right-top (@radius);
+        .rounded.right-bottom (@radius);
+    }
+
+    .bottom (@radius: 0) when (isnumber(@radius)) {
+        .rounded.left-bottom (@radius);
+        .rounded.right-bottom (@radius);
+    }
+
+    .left (@radius: 0) when (isnumber(@radius)) {
+        .rounded.left-top (@radius);
+        .rounded.left-bottom (@radius);
+    }
+}
+
+// box-shadow
+// Usage:
+//       .shadow(none|h-shadow v-shadow blur spread color |inset|initial|inherit)
+//       .shadow.multiple("none|h-shadow v-shadow blur spread color |inset|initial|inherit", "none|h-shadow v-shadow blur spread color |inset|initial|inherit")
+//       .shadow.inset(none|h-shadow v-shadow blur spread color |inset|initial|inherit)
+//       .shadow.alpha(none|h-shadow v-shadow blur spread, color, alpha)
+//       .shadow.inset.alpha(none|h-shadow v-shadow blur spread, color, alpha)
+//=================================================
+
+
+.shadow (@box-shadow: none) {
+    box-shadow: @box-shadow;
+}
+
+.shadow {
+
+    .multiple (@values: "1px 1px 2px #000, 0 0 4px #fff, inset 1px 3px 2px #000") {
+        box-shadow: e(@values);
+    }
+
+    .inset (@value) {
+        .shadow(inset @value);
+    }
+
+    .alpha (@spread: 0 0, @color, @alpha) when (isnumber(@alpha)) and (iscolor(@color)) {
+        .shadow(@spread fade(@color, @alpha));
+    }
+
+    .inset {
+        .alpha (@spread: 0 0, @color, @alpha) when (isnumber(@alpha)) and (iscolor(@color)) {
+            .shadow(inset @spread fade(@color, @alpha));
+        }
+    }
+}
+
+// box-sizing
+// Usage:
+//       .box-sizing(content-box|border-box|initial|inherit)
+//=================================================
+
+.box-sizing (@box-sizing: border-box) {
+    box-sizing: @box-sizing;
+}
+
+// calc
+// Usage:
+//       .calc(width|height, expression)
+//=================================================
+
+.calc (@property, @value) {
+    @{property}: calc(~'@{value}');
+}
+
+// column
+// Usage:
+//       .column.count(auto|column-width column-count|initial|inherit)
+//       .column.fill(number|auto|initial|inherit)
+//       .column.gap(balance|auto|initial|inherit)
+//       .column.rule(column-rule-width column-rule-style column-rule-color|initial|inherit)
+//       .column.rule-color(color|initial|inherit)
+//       .column.rule-style(none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset|initial|inherit)
+//       .column.rule-width(medium|thin|thick|length|initial|inherit)
+//       .column.span(1|all|initial|inherit)
+//       .column.width(auto|length|initial|inherit)
+//=================================================
+
+.column {
+
+    .count (@column-count: auto) {
+        column-count: @column-count;
+    }
+
+    .fill (@fill: balance) {
+        column-fill: @fill;
+    }
+
+    .gap (@gap: normal) {
+        column-fill: @gap;
+    }
+
+    .rule (@rule) {
+        column-rule: @rule;
+
+    }
+
+    .rule-color (@color) when (iscolor(@color)) {
+        column-rule-color: @color;
+    }
+
+    .rule-style (@style: none) {
+        column-rule-style: @style;
+    }
+
+    .rule-width (@width: medium) {
+        column-rule-width: @width;
+    }
+
+    .span (@span: 1) {
+        column-span: @span;
+    }
+
+    .width (@width: auto) {
+        column-width: @width;
+    }
+}
+
+// columns
+// Usage:
+//       .columns(width, count, gap)
+//=================================================
+
+.columns(@width, @count, @gap) {
+    .column.width(@width);
+    .column.count(@count);
+    .column.gap(@gap);
+}
+
+// flex
+// Usage:
+//       .flex(flex-grow flex-shrink flex-basis|auto|initial|inherit)
+//       .flex.basis(number|auto|initial|inherit)
+//       .flex.direction(row|row-reverse|column|column-reverse|initial|inherit)
+//       .flex.flow(flex-direction flex-wrap|initial|inherit)
+//       .flex.grow(number|initial|inherit)
+//       .flex.shrink(number|initial|inherit)
+//       .flex.wrap(nowrap|wrap|wrap-reverse|initial|inherit)
+//=================================================
+
+.flex (@flex: auto) {
+    flex: @flex;
+}
+
+.flex {
+
+    .basis (@basis: auto) {
+        flex-basis: @basis;
+    }
+
+    .direction (@direction: row) {
+        flex-direction: @direction;
+    }
+
+    .flow (@flow: row nowrap) {
+        flex-flow: @flow;
+    }
+
+    .grow (@grow: 0) when (isnumber(@grow)) {
+        flex-grow: @grow;
+    }
+
+    .shrink (@shrink: 0) when (isnumber(@shrink)) {
+        flex-shrink: @shrink;
+    }
+
+    .wrap (@wrap: nowrap) {
+        flex-wrap: @wrap;
+    }
+}
+
+// @font-face
+// Usage:
+//       .font-face(name, path)
+//=================================================
+
+.font-face (@name, @path: '/') {
+    @font-face {
+        font-family: @name;
+        src: url('@{path}.eot');
+        src: url("@{path}.woff") format("woff"),
+        url("@{path}.ttf") format("truetype"),
+        url('@{path}.svg#@{name}') format('svg');
+    }
+}
+
+// linear-gradient & radial-gradient
+// Usage:
+//       .gradient.vertical(background-color, start color, stop color)
+//       .gradient.horizontal(background-color, start color, stop color)
+//       .gradient.diagonal.bottom-right(background-color, start color, stop color)
+//       .gradient.vertical.top-right(background-color, start color, stop color)
+//       .gradient.radial(background-color, start color, stop color)
+//=================================================
+
+.gradient {
+
+    .vertical (@background: #E5E5E5, @start: #FFFFFF, @stop: #E5E5E5) {
+        background: @background;
+        background: svg-gradient(to bottom, @start, @stop);
+        background: linear-gradient(to bottom, @start 0%, @stop 100%);
+    }
+
+    .horizontal (@background: #E5E5E5, @start: #FFFFFF, @stop: #E5E5E5) {
+        background: @background;
+        background: svg-gradient(to right, @start, @stop);
+        background: linear-gradient(to right, @start 0%, @stop 100%);
+    }
+
+    .diagonal {
+
+        .bottom-right (@background: #E5E5E5, @start: #FFFFFF, @stop: #E5E5E5) {
+            background: @background;
+            background: svg-gradient(to bottom right, @start, @stop);
+            background: linear-gradient(135deg, @start 0%, @stop 100%);
+        }
+
+        .top-right (@background: #E5E5E5, @start: #FFFFFF, @stop: #E5E5E5) {
+            background: @background;
+            background: svg-gradient(to top right, @start, @stop);
+            background: linear-gradient(45deg, @start 0%, @stop 100%);
+        }
+    }
+
+    .radial (@background: #E5E5E5, @start: #FFFFFF, @stop: #E5E5E5) {
+        background: @background;
+        background: svg-gradient(ellipse at center, @start, @stop);
+        background: radial-gradient(ellipse at center, @start 0%, @stop 100%);
+    }
+}
+
+// justify-content
+// Usage:
+//       .justify-content(flex-start|flex-end|center|space-between|space-around|initial|inherit)
+//=================================================
+
+.justify-content (@justify-content: flex-start) {
+    justify-content: @justify-content;
+}
+
+// @keyframes
+// Usage:
+//       .keyframes-fade-in()
+//       .keyframes-fade-out()
+//       .keyframes-shake()
+//       .keyframes-slide-down()
+//       .keyframes-slide-up()
+//       .keyframes-zoom-in()
+//       .keyframes-zoom-out()
+//=================================================
+
+.keyframes-fade-in () {
+
+    ._fade-in () {
+        0% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fade-in {
+        ._fade-in();
+    }
+}
+
+.keyframes-fade-out () {
+
+    ._fade-out () {
+        0% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+        }
+    }
+
+    @keyframes fade-out {
+        ._fade-out();
+    }
+}
+
+.keyframes-shake () {
+
+    ._shake () {
+
+        0%,
+        100% {
+            .translate (0);
+        }
+
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+            .translate (-10px);
+        }
+
+        20%,
+        40%,
+        60%,
+        80% {
+            .translate (10px);
+        }
+    }
+
+    @keyframes shake {
+        ._shake();
+    }
+}
+
+.keyframes-slide-down () {
+
+    ._slide-down () {
+        0% {
+            opacity: 0;
+            .transform(translateY(-20px) perspective(600px) rotateX(15deg));
+        }
+
+        100% {
+            opacity: 1;
+            .transform(translateY(0) perspective(600px) rotateX(0deg));
+        }
+    }
+
+    @keyframes slide-down {
+        ._slide-down();
+    }
+}
+
+.keyframes-slide-up () {
+
+    ._slide-up () {
+        0% {
+            opacity: 1;
+            .transform(translateY(0) perspective(600px) rotateX(0deg));
+        }
+
+        100% {
+            opacity: 0;
+            .transform(translateY(-20px) perspective(600px) rotateX(15deg));
+        }
+    }
+
+    @keyframes slide-up {
+        ._slide-up();
+    }
+}
+
+.keyframes-zoom-in () {
+
+    ._zoom-in () {
+        0% {
+            opacity: 0;
+            .scale(.3);
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes zoom-in {
+        ._zoom-in();
+    }
+}
+
+.keyframes-zoom-out () {
+
+    ._zoom-out () {
+        0% {
+            opacity: 1;
+            .scale(1);
+        }
+
+        50% {
+            opacity: 0;
+            .scale(.3);
+        }
+
+        100% {
+            opacity: 0;
+        }
+    }
+
+    @keyframes zoom-out {
+        ._zoom-out();
+    }
+}
+
+// opacity
+// Usage:
+//       .opacity(number)
+//=================================================
+
+.opacity(@opacity: 1) when (isnumber(@opacity)) {
+    opacity: @opacity;
+}
+
+// order
+// Usage:
+//       .order(number)
+//=================================================
+
+.order(@order: 0) when (isnumber(@order)) {
+    order: @order;
+}
+
+// perspective
+// Usage:
+//       .perspective(length|none)
+//       .perspective-origin(x-axis, y-axis)
+//=================================================
+.perspective (@perspective: none) {
+    perspective: @perspective;
+}
+
+.perspective {
+
+    .origin (@x: 0, @y: 0) {
+        perspective-origin: @arguments;
+    }
+}
+
+// placeholder
+// Usage:
+//       .placholder(property, value)
+//=================================================
+.placeholder(@property, @value) {
+    &::placeholder {
+        @{property}: @value
+    }
+}
+
+// tab-size
+// Usage:
+//       .tab-size(number|length)
+//=================================================
+.tab-size (@tab-size: 0) when (isnumber(@tab-size)) {
+    tab-size: @tab-size;
+}
+
+// transform
+// Usage:
+//       .transform(none|transform-functions|initial|inherit)
+//       .transform.matrix(number,number,number,number,number,number)
+//       .transform.matrix3d(number,number,number,number,number,number,number,number,number,number,number,number,number,number,number,number)
+//       .transform.translate(x,y)
+//       .transform.translate3d(x,y,z)
+//       .translateX(x)
+//       .translateY(y)
+//       .translateZ(z)
+//       .transform.scale(x,y)
+//       .transform.scale3d(x,y,z)
+//       .transform.scaleX(x)
+//       .transform.scaleY(y)
+//       .transform.scaleZ(z)
+//       .transform.rotate(angle)
+//       .transform.scale3d(x,y,z,angle)
+//       .transform.scaleX(x)
+//       .transform.scaleY(y)
+//       .transform.scaleZ(z)
+//       .origin(x-axis y-axis z-axis|initial|inherit)
+//       .transform.style(flat|preserve-3d|initial|inherit)
+//=================================================
+
+.transform (@transform: none) {
+    transform: @transform;
+}
+
+.transform {
+
+    .matrix(@a: 0, @b: 0, @c: 0, @d: 0, @e: 0, @f: 0) {
+        .transform(matrix(@arguments));
+    }
+
+    .matrix3d(@a: 0, @b: 0, @c: 0, @d: 0, @e: 0, @f: 0, @g: 0, @h: 0, @i: 0, @j: 0, @k: 0, @l: 0, @m: 0, @n: 0, @o: 0, @p: 0) {
+        .transform(matrix(@arguments));
+    }
+
+    .translate (@x: 0, @y: 0) {
+        .transform(translate(@arguments));
+    }
+
+    .translate3d (@x: 0, @y: 0, @z: 0) {
+        .transform(translate3d(@arguments));
+    }
+
+    .translateX (@x: 0) {
+        .transform(translateX(@x));
+    }
+
+    .translateY (@y: 0) {
+        .transform(translateY(@y));
+    }
+
+    .translateZ (@z: 0) {
+        .transform(translateZ(@z));
+    }
+
+    .scale (@x: 0) {
+        .transform(scale(@arguments));
+    }
+
+    .scale3d (@x: 0, @y: 0, @z: 0) {
+        .transform(scale3d(@arguments));
+    }
+
+    .scaleX (@x: 0) {
+        .transform(scaleX(@x));
+    }
+
+    .scaleY (@y: 0) {
+        .transform(scaleY(@y));
+    }
+
+    .scaleZ (@z: 0) {
+        .transform(scaleZ(@z));
+    }
+
+    .rotate (@angle) {
+        .transform(rotate(@angle));
+    }
+
+    .rotate3d (@x: 0, @y: 0, @z: 0, @angle) {
+        .transform(rotate3d(@arguments));
+    }
+
+    .rotateX (@angle) {
+        .transform(rotateX(@angle));
+    }
+
+    .rotateZ (@angle) {
+        .transform(rotateZ(@angle));
+    }
+
+    .skew (@x: 0, @y: 0) {
+        .transform(skew(@arguments));
+    }
+
+    .skewX (@x: 0) {
+        .transform(skewX(@x));
+    }
+
+    .skewY (@y: 0) {
+        .transform(skewY(@y));
+    }
+
+    .perspective (@value: 0) {
+        .transform(perspective(@value));
+    }
+
+    .origin (@x: 50%, @y: 50%, @z: 0) {
+        transform-origin: @arguments;
+    }
+
+    .style (@style: flat) {
+        transform-style: @style;
+    }
+}
+
+// transition
+// Usage:
+//       .transition(property, duration, timing-function, delay|initial|inherit)
+//       .transition.linear(property, duration, delay)
+//       .transition.ease(property, duration, delay)
+//       .transition.ease-in(property, duration, delay)
+//       .transition.ease-out(property, duration, delay)
+//       .transition.ease-in-out(property, duration, delay)
+//       .transition.easeInQuad(property, duration, delay)
+//       .transition.easeInCubic(property, duration, delay)
+//       .transition.easeInQuart(property, duration, delay)
+//       .transition.easeInQuint(property, duration, delay)
+//       .transition.easeInSine(property, duration, delay)
+//       .transition.easeInExpo(property, duration, delay)
+//       .transition.easeInCirc(property, duration, delay)
+//       .transition.easeInBack(property, duration, delay)
+//       .transition.easeOutQuad(property, duration, delay)
+//       .transition.easeOutCubic(property, duration, delay)
+//       .transition.easeOutQuart(property, duration, delay)
+//       .transition.easeOutQuint(property, duration, delay)
+//       .transition.easeOutSine(property, duration, delay)
+//       .transition.easeOutExpo(property, duration, delay)
+//       .transition.easeOutCirc(property, duration, delay)
+//       .transition.easeOutBack(property, duration, delay)
+//       .transition.easeInOutQuad(property, duration, delay)
+//       .transition.easeInOutCubic(property, duration, delay)
+//       .transition.easeInOutQuart(property, duration, delay)
+//       .transition.easeInOutQuint(property, duration, delay)
+//       .transition.easeInOutSine(property, duration, delay)
+//       .transition.easeInOutExpo(property, duration, delay)
+//       .transition.easeInOutCirc(property, duration, delay)
+//       .transition.easeInOutBack(property, duration, delay)
+//       .transition.delay(time|initial|inherit)
+//       .transition.duration(time|initial|inherit)
+//       .transition.property(none|all|property|initial|inherit)
+//       .transition.timing-function(ease|linear|ease-in|ease-out|ease-in-out|cubic-bezier()|initial|inherit)
+//=================================================
+.transition (@property: all, @duration: 0ms, @timing: ease, @delay: 0ms) {
+    transition: @arguments;
+}
+
+.transition {
+
+    // Transition property presets
+    .linear (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, linear, @delay);
+    }
+
+    .ease (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, ease, @delay);
+    }
+
+    .ease-in (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, ease-in, @delay);
+    }
+
+    .ease-out (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, ease-out, @delay);
+    }
+
+    .ease-in-out (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, ease-in-out, @delay);
+    }
+
+    .easeInQuad (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.550, 0.085, 0.680, 0.530), @delay);
+    }
+
+    .easeInCubic (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.550, 0.055, 0.675, 0.190), @delay);
+    }
+
+    .easeInQuart (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.895, 0.030, 0.685, 0.220), @delay);
+    }
+
+    .easeInQuint (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.755, 0.050, 0.855, 0.060), @delay);
+    }
+
+    .easeInSine (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.470, 0.000, 0.745, 0.715), @delay);
+    }
+
+    .easeInExpo (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.950, 0.050, 0.795, 0.035), @delay);
+    }
+
+    .easeInCirc (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.600, 0.040, 0.980, 0.335), @delay);
+    }
+
+    .easeInBack (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.600, -0.280, 0.735, 0.045), @delay);
+    }
+
+    .easeOutQuad (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.250, 0.460, 0.450, 0.940), @delay);
+    }
+
+    .easeOutCubic (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.215, 0.610, 0.355, 1.000), @delay);
+    }
+
+    .easeOutQuart (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.165, 0.840, 0.440, 1.000), @delay);
+    }
+
+    .easeOutQuint (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.230, 1.000, 0.320, 1.000), @delay);
+    }
+
+    .easeOutSine (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.390, 0.575, 0.565, 1.000), @delay);
+    }
+
+    .easeOutExpo (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.190, 1.000, 0.220, 1.000), @delay);
+    }
+
+    .easeOutCirc (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.075, 0.820, 0.165, 1.000), @delay);
+    }
+
+    .easeOutBack (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.175, 0.885, 0.320, 1.275), @delay);
+    }
+
+    .easeInOutQuad (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.455, 0.030, 0.515, 0.955), @delay);
+    }
+
+    .easeInOutCubic (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.645, 0.045, 0.355, 1.000), @delay);
+    }
+
+    .easeInOutQuart (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.770, 0.000, 0.175, 1.000), @delay);
+    }
+
+    .easeInOutQuint (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.860, 0.000, 0.070, 1.000), @delay);
+    }
+
+    .easeInOutSine (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.445, 0.050, 0.550, 0.950), @delay);
+    }
+
+    .easeInOutExpo (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(1.000, 0.000, 0.000, 1.000), @delay);
+    }
+
+    .easeInOutCirc (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.785, 0.135, 0.150, 0.860), @delay);
+    }
+
+    .easeInOutBack (@property: all, @duration: 0ms, @delay: 0ms) {
+        .transition (@property, @duration, cubic-bezier(0.785, 0.135, 0.150, 0.860), @delay);
+    }
+
+    .delay(@delay: 0ms) {
+        transition-delay: e(@delay);
+    }
+
+    .duration(@duration: 0ms) {
+        transition-duration: e(@duration);
+    }
+
+    .property(@property: all) {
+        transition-property: e(@property);
+    }
+
+    .timing-function(@timing-function: ease) {
+        transition-timing-function: @timing-function;
+    }
+
+}
+
+// user-select
+// Usage:
+//       .user-select(none|text|all|element)
+//=================================================
+.user-select(@select: all) {
+    user-select: @select;
+}
